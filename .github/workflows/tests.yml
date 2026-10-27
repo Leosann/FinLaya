@@ -25,9 +25,9 @@ jobs:
         # 3.11 是 README 里的目标版本；3.12 用来提前发现 numpy 2.x 之类的兼容问题
         python-version: ["3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
