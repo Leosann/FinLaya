@@ -1,8 +1,6 @@
 <div align="center">
 
-<img src="assets/logo-200.png" alt="FinLaya" height="96" align="middle" />
-
-# FinLaya
+<img src="assets/logo-wordmark-260.png" alt="FinLaya" height="84" align="middle" />
 
 **Chinese financial sentiment as a decision problem — a third of the parameters, the same accuracy**
 

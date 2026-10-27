@@ -1,8 +1,6 @@
 <div align="center">
 
-<img src="assets/logo-200.png" alt="FinLaya" height="96" align="middle" />
-
-# FinLaya
+<img src="assets/logo-wordmark-260.png" alt="FinLaya" height="84" align="middle" />
 
 **中文金融情感决策模型 —— 用 1/3 的参数量，拿到同等精度**
 
