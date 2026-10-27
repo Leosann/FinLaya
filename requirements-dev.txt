@@ -1,0 +1,7 @@
+# 仅用于跑单元测试。
+#
+# tests/ 只覆盖指标计算与数据转换这两层——它们是纯 Python + numpy，
+# 不需要 torch / transformers / GPU / 模型权重 / 原始语料。
+# 训练与评测依赖见 README 的 Installation 一节。
+numpy>=1.24
+pytest>=7.0

@@ -237,6 +237,28 @@ The three models must be measured in separate processes (they depend on differen
 /data/miniconda/envs/laya/bin/python     common/deploy_metrics.py fb_laya
 ```
 
+### Tests
+
+The metric and data-conversion layers are plain Python + numpy, so they run without a GPU, model
+weights or the raw datasets:
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest -q
+```
+
+`tests/` covers the sentiment-metric implementations (`common/laya/laya_metrics.py` and the copies in
+`FinBert/scripts/finbert_baseline.py`, cross-checked against each other), the Laya JSONL validator,
+the three dataset converters and the strict-protocol leak checks. It also **re-derives every
+published number** in `FinLaya-mmBERT/reports/eval/ft_*_metrics.json` from the committed evaluation
+reports, so a regression in the metric code fails the suite instead of silently changing the tables
+above. GitHub Actions runs it on Python 3.11 and 3.12 for every push to `main` and every PR.
+
+> `AURC` is the one metric the suite checks with a `1e-3` tolerance rather than exactly: the report
+> probabilities are rounded to 4 decimals, so confidence ties are common (1,051 of FinFE's 2,020
+> cases) and the area under the risk-coverage curve depends on how ties are ordered. `selective_acc@k`
+> is computed with a stable sort and does reproduce the published values exactly.
+
 ## Model download
 
 ### Hugging Face (recommended)
