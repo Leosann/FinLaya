@@ -10,11 +10,7 @@ FinLaya/
 ├─ scripts/                     可执行脚本，按运行顺序排列
 │  ├─ train.sh                  dryrun | train | eval | all
 │  ├─ baseline.sh               未微调基座 zero-shot 基线
-│  ├─ eval_ft.sh                微调后评测（转调 run_eval.py）
-│  ├─ run_eval.py               [核心] Router.register 本地 ckpt + evaluate
-│  ├─ laya_metrics.py           从报告复算全套指标，支持 --strict
-│  ├─ check_leak.py             训练/测试集 state 重叠审计
-│  └─ strict_acc.py             按报告 cases 行序对齐复算严格口径
+│  └─ eval_ft.sh                微调后评测（转调 ../../common/laya/run_eval.py）
 ├─ configs/
 │  ├─ rl_agent_config.json      训练自动产出的推理配置（温度 / 弃权阈值 / 题面定义）
 │  ├─ questions.json            4 个 qid 的完整定义
@@ -24,6 +20,12 @@ FinLaya/
 │  ├─ eval/                     ft_* 评测报告 + 复算指标（全量 & 严格）
 │  └─ baseline/                 base_* 未微调基线报告
 └─ tokenizer/                   ckpt 配套 tokenizer（3 个文件）
+
+../common/laya/                  与 FinBertLaya 共用的评测工具
+  ├─ run_eval.py                 [核心] Router.register 本地 ckpt + evaluate
+  ├─ laya_metrics.py             从报告复算全套指标，支持 --strict
+  ├─ check_leak.py               训练/测试集 state 重叠审计
+  └─ strict_acc.py               按报告 cases 行序对齐复算严格口径
 ```
 
 ## 运行顺序
@@ -45,12 +47,12 @@ bash scripts/eval_ft.sh
 # 4) 复算全套指标（全量 + 严格口径）
 DATA=${LAYA_DATA:-/data/laya-fin/laya}
 for f in finfe_eval finnsp_eval cfsc_absa_test; do
-  python scripts/laya_metrics.py reports/eval/ft_${f}.json ${DATA}/${f}.jsonl
-  python scripts/laya_metrics.py reports/eval/ft_${f}.json ${DATA}/${f}.jsonl --strict
+  python ../common/laya/laya_metrics.py reports/eval/ft_${f}.json ${DATA}/${f}.jsonl
+  python ../common/laya/laya_metrics.py reports/eval/ft_${f}.json ${DATA}/${f}.jsonl --strict
 done
 
 # 5) 重叠审计（可选，结论已写在 REPORT.md §2）
-python scripts/check_leak.py
+python ../common/laya/check_leak.py
 ```
 
 ## 两个必须知道的坑

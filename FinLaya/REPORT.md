@@ -197,7 +197,7 @@ ckpt/
   checkpoint_latest/           运行时快照
 laya/                          9 个 JSONL（102 MB）
 reports/                       base_*.json（zero-shot）+ ft_*.json（微调后）
-train.sh / baseline.sh / eval_ft.sh / run_eval.py / check_leak.py / strict_acc.py
+train.sh / baseline.sh / eval_ft.sh / run_eval.py / check_leak.py / strict_acc.py（后四个现已移至 common/laya/）
 ```
 
 ### 4.2 本地仓库结构（`FinLaya/`）
@@ -208,8 +208,8 @@ train.sh / baseline.sh / eval_ft.sh / run_eval.py / check_leak.py / strict_acc.p
 FinLaya/
 ├─ README.md                   目录导航 + 运行顺序 + 数字速查
 ├─ REPORT.md                   本文
-├─ scripts/                    train.sh · baseline.sh · eval_ft.sh · run_eval.py
-│                              laya_metrics.py · check_leak.py · strict_acc.py
+├─ scripts/                    train.sh · baseline.sh · eval_ft.sh
+../common/laya/                 run_eval.py · laya_metrics.py · check_leak.py · strict_acc.py
 ├─ configs/                    rl_agent_config.json · questions.json · train_report.json
 ├─ logs/                       train_run / dryrun / baseline / eval_ft
 ├─ reports/eval/               ft_*.json + ft_*_metrics{,_strict}.json

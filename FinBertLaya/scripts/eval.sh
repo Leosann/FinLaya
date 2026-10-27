@@ -17,6 +17,7 @@ DATA=${LAYA_DATA:-${ROOT}/laya}
 CKPT=${FB_CKPT:-${ROOT}/fb_ckpt}
 REPORTS=${LAYA_REPORTS:-${ROOT}/reports}
 ENV=${LAYA_ENV:-/data/miniconda/envs/laya}
+LAYA_TOOLS="$(cd "${SCRIPT_DIR}/../../common/laya" && pwd)"   # 与 FinLaya 共用的评测工具
 
 export PATH=${ENV}/bin:$PATH
 export HF_ENDPOINT=${HF_ENDPOINT:-https://hf-mirror.com}
@@ -31,14 +32,14 @@ TARGETS=${*:-"finfe_eval finnsp_eval cfsc_absa_test"}
 for f in ${TARGETS}; do
   echo ""
   echo "======== EVAL fb_${f} ========"
-  python "${ROOT}/run_eval.py" "${DATA}/${f}.jsonl" "${CKPT}" "${REPORTS}/fb_${f}.json" 2>&1 | tail -16
+  python "${LAYA_TOOLS}/run_eval.py" "${DATA}/${f}.jsonl" "${CKPT}" "${REPORTS}/fb_${f}.json" 2>&1 | tail -16
 done
 
 echo ""
 echo "======== 复算指标（脚本自写 JSON，勿重定向）========"
 for f in ${TARGETS}; do
-  python "${ROOT}/laya_metrics.py" "${REPORTS}/fb_${f}.json" "${DATA}/${f}.jsonl"          > /dev/null 2>&1
-  python "${ROOT}/laya_metrics.py" "${REPORTS}/fb_${f}.json" "${DATA}/${f}.jsonl" --strict > /dev/null 2>&1
+  python "${LAYA_TOOLS}/laya_metrics.py" "${REPORTS}/fb_${f}.json" "${DATA}/${f}.jsonl"          > /dev/null 2>&1
+  python "${LAYA_TOOLS}/laya_metrics.py" "${REPORTS}/fb_${f}.json" "${DATA}/${f}.jsonl" --strict > /dev/null 2>&1
   echo "  ${f}: full $(wc -c < "${REPORTS}/fb_${f}_metrics.json") B / strict $(wc -c < "${REPORTS}/fb_${f}_metrics_strict.json") B"
 done
 

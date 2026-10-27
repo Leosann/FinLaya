@@ -14,6 +14,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LAYA_TOOLS="$(cd "${SCRIPT_DIR}/../../common/laya" && pwd)"   # 与 FinBertLaya 共用的评测工具
 ROOT=${LAYA_ROOT:-/data/laya-fin}
 DATA=${LAYA_DATA:-${ROOT}/laya}
 CKPT=${LAYA_CKPT:-${ROOT}/ckpt}
@@ -33,7 +34,7 @@ TARGETS=${*:-"finfe_eval finnsp_eval cfsc_absa_test"}
 for f in ${TARGETS}; do
   echo ""
   echo "======== FT ${f} ========"
-  python "${SCRIPT_DIR}/run_eval.py" \
+  python "${LAYA_TOOLS}/run_eval.py" \
       "${DATA}/${f}.jsonl" "${CKPT}" "${REPORTS}/ft_${f}.json" 2>&1 | tail -20
 done
 echo "FT_EVAL_DONE."
