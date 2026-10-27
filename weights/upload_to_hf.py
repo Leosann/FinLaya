@@ -30,7 +30,7 @@ Token 权限
 
 脚本会做什么
 ------------
-1. 校验 weights/finbert-laya/ 下的 3 个分片，合并成 model.safetensors
+1. 校验 weights/finlaya-finbert/ 下的 3 个分片，合并成 model.safetensors
 2. 校验 SHA256（745cb939...）
 3. 组一个符合 laya 加载布局的上传目录（该目录的内容会落到**仓库根**）：
        model.safetensors / rl_agent_config.json / questions.json

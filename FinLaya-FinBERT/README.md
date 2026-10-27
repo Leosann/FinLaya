@@ -1,4 +1,15 @@
-# FinBertLaya — Laya with FinBERT as the encoder
+# FinLaya-FinBERT — Laya decision model with the FinBERT encoder
+
+> **Where this sits in the project.** FinLaya is a family of two models that share one Laya decision head and differ only in the encoder:
+>
+> | Model | Directory | Encoder | Params |
+> |---|---|---|---:|
+> | **FinLaya-mmBERT** | [`FinLaya-mmBERT/`](../FinLaya-mmBERT/README.md) | `jhu-clsp/mmBERT-base` | 321.9 M |
+> | **FinLaya-FinBERT** ← *this one* | `FinLaya-FinBERT/` | `yiyanghkust/finbert-tone-chinese` | 117.2 M |
+>
+> This directory is the **FinBERT variant**: the full-scale mmBERT encoder replaced by a much smaller encoder that was already pretrained on Chinese financial text, cutting parameters by 63.6% while holding accuracy.
+>
+> **Published weights.** The Hugging Face repo [`zhanghanshuo/FinLaya`](https://huggingface.co/zhanghanshuo/FinLaya) contains **this** model (117.2 M, 223.6 MB), not the mmBERT one. The bare repo name predates the split into two variants.
 
 Swapping Laya's mmBERT encoder (322M) for FinBERT (102M), **with no changes to the laya source**, yields a 117.2M decision model. Full analysis in **[../docs/FINBERT_AS_ENCODER.md](../docs/FINBERT_AS_ENCODER.md)**.
 
@@ -6,17 +17,17 @@ Swapping Laya's mmBERT encoder (322M) for FinBERT (102M), **with no changes to t
 |---|---|
 | Encoder | `yiyanghkust/finbert-tone-chinese` (BertModel 102.27M) |
 | Decision head | Laya native (14.97M, **identical** to the mmBERT version) |
-| Total | **117.24M** (mmBERT version 321.9M, −63.6%) |
+| Total | **117.24M** (FinLaya-mmBERT 321.9M, −63.6%) |
 | Training | 4 epochs / 3,068 steps / **23 minutes** / ~3.8 GB GPU memory |
-| Key result | FinFE strict protocol **80.28%** (mmBERT version 77.03%, **+3.25 pt**) |
+| Key result | FinFE strict protocol **80.28%** (FinLaya-mmBERT 77.03%, **+3.25 pt**) |
 | Deployment | 223.6 MB / 8.66 ms p50 / 113 QPS / 667 MB GPU memory |
 
 ## Layout
 
 ```
-FinBertLaya/
+FinLaya-FinBERT/
 ├─ scripts/
-│  ├─ make_fb_base.py    [core] build the FinBERT-Laya base checkpoint
+│  ├─ make_fb_base.py    [core] build the FinLaya-FinBERT base checkpoint
 │  ├─ train.sh           RLCD training (hyperparameters identical to the mmBERT version)
 │  └─ eval.sh            evaluate the three test sets + recompute metrics
 ├─ configs/
@@ -92,7 +103,7 @@ The whole `training` field is removed as well, so the mmBERT run's training meta
 
 ## Quick results
 
-| Task | Protocol | n | mmBERT-Laya | **FinBERT-Laya** | delta |
+| Task | Protocol | n | FinLaya-mmBERT | **FinLaya-FinBERT** | delta |
 |---|---|---:|---:|---:|---:|
 | FinFE | full | 2,020 | 77.97% | **78.02%** | +0.05 pt |
 | FinFE | strict | 923 | 77.03% | **80.28%** | **+3.25 pt** |

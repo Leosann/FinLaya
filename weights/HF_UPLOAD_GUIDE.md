@@ -48,7 +48,7 @@ Three options. The first is recommended.
 2. Select all five entries (`README.md`, `model.safetensors`, `rl_agent_config.json`, `questions.json`, `encoder/`, `tokenizer/`)
 3. Click **Move** (if there is no Move button, use **Edit → Move file** on each entry) and set the target to `/` (repo root)
 4. Go back to the root, then delete the now-empty `hf-ready/` folder
-5. Open the **Model card** tab and confirm it shows the FinBERT-Laya content instead of a blank page
+5. Open the **Model card** tab and confirm it shows the FinLaya-FinBERT content instead of a blank page
 
 ### Option 2: re-upload to the root with the `hf` CLI
 
@@ -78,7 +78,7 @@ The script calls `upload_folder(..., path_in_repo="")`, so it never nests an ext
 ## Method A: drag and drop in the web UI (easiest when creating a repo from scratch)
 
 1. Open https://huggingface.co/new
-2. Set **Owner** to `zhanghanshuo`, **Model name** to `FinLaya`, pick Public visibility, then click **Create model**
+2. Set **Owner** to `zhanghanshuo`, **Model name** to `FinLaya-mmBERT`, pick Public visibility, then click **Create model**
 3. Open the repo → **Files** tab → **Add file** → **Upload files**
 4. Select the **contents** of the `hf-ready` folder (not the folder itself) and drag them into the upload area
    - Dragging the whole folder also works — the browser preserves the `encoder/` and `tokenizer/` subfolders
@@ -116,7 +116,7 @@ cd FinLaya
 cp -r "D:\WorkBuddyAIWorkhome\2026-10-24-19-45-48\weights\hf-ready\"* .
 git lfs track "*.safetensors"
 git add .
-git commit -m "Upload FinBERT-Laya 117M"
+git commit -m "Upload FinLaya-FinBERT 117M"
 git push
 ```
 
@@ -130,7 +130,7 @@ Open `https://huggingface.co/zhanghanshuo/FinLaya` and confirm:
 
 - [ ] **9 files at the root**, with `model.safetensors` showing `223.6 MB` and an LFS badge
 - [ ] **No `hf-ready/` subfolder**
-- [ ] **The model card renders** — the header reads "FinBERT-Laya (117M)", not a blank page and not raw YAML
+- [ ] **The model card renders** — the header reads "FinLaya-FinBERT (117M)", not a blank page and not raw YAML
 - [ ] **Subfolder structure is intact** — `encoder/config.json` and `tokenizer/` exist and were not flattened
 - [ ] **The right-hand info panel** reports roughly 117M parameters (HF reads this from the safetensors header)
 - [ ] **License shows MIT** (the model card frontmatter has `license: mit`; if it still says apache-2.0, the root README has not been replaced yet)
@@ -160,10 +160,10 @@ Files on this machine cannot be handed to another one directly. Two options:
 1. **Pull from GitHub** (recommended — no need to copy 223 MB)
    ```bash
    git clone https://github.com/Leosann/FinLaya.git
-   cd FinLaya/weights/finbert-laya
+   cd FinLaya-mmBERT/weights/finlaya-finbert
    bash restore.sh          # merge the shards + verify SHA256
    ```
-   Then upload `model.safetensors`, `rl_agent_config.json`, `encoder/` and `tokenizer/` from `weights/finbert-laya/`, plus `weights/hf-model-card.md` renamed to `README.md`. `questions.json` lives in `FinLaya/configs/`.
+   Then upload `model.safetensors`, `rl_agent_config.json`, `encoder/` and `tokenizer/` from `weights/finlaya-finbert/`, plus `weights/hf-model-card.md` renamed to `README.md`. `questions.json` lives in `FinLaya-mmBERT/configs/`.
 
 2. **Copy the whole `hf-ready` directory** (224 MB) via a USB stick or cloud drive.
 

@@ -1,6 +1,8 @@
-# FinBERT-Laya weights
+# FinLaya-FinBERT weights
 
 FinBERT encoder + Laya decision head, 117.24M parameters, fp16. Trained on CFSC-ABSA / FinFE / FinNSP.
+
+> **Which model is this?** `FinLaya-FinBERT` is the smaller of the two Laya variants: FinBERT (102M) as the encoder instead of mmBERT (322M), with an identical 14.97M decision head. The mmBERT variant is `FinLaya-mmBERT` (321.9M) and is **not** stored here. These are the weights published at [`zhanghanshuo/FinLaya`](https://huggingface.co/zhanghanshuo/FinLaya) — the bare repo name predates the split into two variants.
 
 ## Why the file is split
 
@@ -16,7 +18,7 @@ FinBERT encoder + Laya decision head, 117.24M parameters, fp16. Trained on CFSC-
 ## Merging
 
 ```bash
-cd weights/finbert-laya
+cd weights/finlaya-finbert
 bash restore.sh
 ```
 
@@ -35,7 +37,7 @@ Verify only, without merging: `bash restore.sh --check`
 ## Contents
 
 ```
-finbert-laya/
+finlaya-finbert/
 ├─ model.safetensors.part-00/01/02   weight shards (fp16, 235 tensors)
 ├─ rl_agent_config.json              encoder / max_len / temperatures / abstention thresholds
 ├─ encoder/config.json               BertConfig (hidden 768, 12 layers, vocab 21128)
@@ -52,11 +54,11 @@ Once merged, the directory is the standard layout `laya.load()` expects, so `Rou
 import laya
 
 router = laya.Router(device="cuda", preload=False)
-name = router.register("finbert-laya", "weights/finbert-laya")
+name = router.register("finlaya-finbert", "weights/finlaya-finbert")
 ans = router.predict("<Chinese financial sentence>", questions, model=name)
 ```
 
-The `questions` definitions live in [`FinLaya/configs/questions.json`](../../FinLaya/configs/questions.json).
+The `questions` definitions live in [`FinLaya-mmBERT/configs/questions.json`](../../FinLaya-mmBERT/configs/questions.json).
 
 ## Inference parameters fitted during training
 

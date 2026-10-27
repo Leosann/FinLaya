@@ -14,7 +14,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LAYA_TOOLS="$(cd "${SCRIPT_DIR}/../../common/laya" && pwd)"   # 与 FinBertLaya 共用的评测工具
+LAYA_TOOLS="$(cd "${SCRIPT_DIR}/../../common/laya" && pwd)"   # 与 FinLaya-FinBERT 共用的评测工具
 ROOT=${LAYA_ROOT:-/data/laya-fin}
 DATA=${LAYA_DATA:-${ROOT}/laya}
 CKPT=${LAYA_CKPT:-${ROOT}/ckpt}

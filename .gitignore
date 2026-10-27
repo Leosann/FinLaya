@@ -16,11 +16,11 @@ env/
 *.pt
 *.pth
 *.ckpt
-FinLaya/checkpoint_latest/
+FinLaya-mmBERT/checkpoint_latest/
 FinBert/models/
 # 训练中途快照（与顶层 model.safetensors 同一份权重，别重复提交）
 checkpoint_latest/
-# FinBERT-Laya 的 base 与训练产物（各约 224 MB）
+# FinLaya-FinBERT 的 base 与训练产物（各约 224 MB）
 fb_base/
 fb_ckpt/
 fb_ckpt_run1/
@@ -32,7 +32,7 @@ datasets/FinNSP/
 datasets/laya/*.jsonl
 
 # ---- tokenizer（33 MB，可从 HuggingFace 重新下载）----
-FinLaya/tokenizer/
+FinLaya-mmBERT/tokenizer/
 
 # ---- 缓存 ----
 hf_cache/

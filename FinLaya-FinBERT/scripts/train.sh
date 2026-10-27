@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# FinBERT-Laya 训练：与 mmBERT 版 Laya 完全相同的 RLCD 配方，只换 encoder
+# FinLaya-FinBERT 训练：与 FinLaya-mmBERT 完全相同的 RLCD 配方，只换 encoder
 #
 #   数据 : ${LAYA_DATA}/all_train.jsonl   53,341 行 / 55,562 题
 #   基座 : ${FB_BASE_OUT}  (FinBERT encoder 102.27M + 决策头 14.97M = 117.24M)

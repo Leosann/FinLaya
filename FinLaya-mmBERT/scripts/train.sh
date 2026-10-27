@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# FinLaya：Laya 决策模型在中文金融三任务上的微调与评测
+# FinLaya-mmBERT：Laya 决策模型（mmBERT encoder）在中文金融三任务上的微调与评测
 #
 #   训练数据 : ${LAYA_DATA}/all_train.jsonl    53,341 行 / 55,562 题
 #   验证数据 : ${LAYA_DATA}/finfe_eval.jsonl   2,020 条，三分类

@@ -1,13 +1,13 @@
 # Three-model full-metric comparison
 
-> mmBERT-Laya (322M) · FinBERT-Laya (117M) · FinBERT classifier (102M)
-> Same data, same metrics, same RTX 4090. All numbers come from `FinLaya/reports/`, `FinBertLaya/reports/`, `FinBert/reports/`, and `common/reports/deploy_metrics.json`.
+> FinLaya-mmBERT (322M) · FinLaya-FinBERT (117M) · FinBERT classifier (102M)
+> Same data, same metrics, same RTX 4090. All numbers come from `FinLaya-mmBERT/reports/`, `FinLaya-FinBERT/reports/`, `FinBert/reports/`, and `common/reports/deploy_metrics.json`.
 
 ---
 
 ## 0. Model configuration
 
-| | mmBERT-Laya | FinBERT-Laya | FinBERT classifier |
+| | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT classifier |
 |---|---|---|---|
 | Encoder | ModernBERT-base (mmBERT) | BERT-base (FinBERT) | BERT-base (FinBERT) |
 | Encoder parameters | 307.0 M | 102.3 M | 102.3 M |
@@ -25,12 +25,12 @@
 
 ## 1. Accuracy (full protocol)
 
-| Task | n | mmBERT-Laya | FinBERT-Laya | FinBERT | Best |
+| Task | n | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT | Best |
 |---|---:|---:|---:|---:|---|
 | FinFE social sentiment | 2,020 | 77.97 | 78.02 | **79.26** | FinBERT |
 | FinNSP negative presence | 500 | 95.00 | 95.20 | **95.60** | FinBERT |
-| FinNSP negative subject | 259 | **96.91** | 95.75 | 95.37 | mmBERT-Laya |
-| CFSC-ABSA aspect-level | 8,312 | **93.37** | 93.01 | 92.78 | mmBERT-Laya |
+| FinNSP negative subject | 259 | **96.91** | 95.75 | 95.37 | FinLaya-mmBERT |
+| CFSC-ABSA aspect-level | 8,312 | **93.37** | 93.01 | 92.78 | FinLaya-mmBERT |
 
 **Spread**: across the four tasks the range between best and worst model is only **1.54 pt** (FinNSP negative subject) down to **0.59 pt** (CFSC). In other words, **swapping the encoder barely affects accuracy**.
 
@@ -38,20 +38,20 @@
 
 ## 2. Accuracy (strict protocol, training-set overlap removed)
 
-| Task | n (after removal) | mmBERT-Laya | FinBERT-Laya | FinBERT | Best |
+| Task | n (after removal) | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT | Best |
 |---|---:|---:|---:|---:|---|
-| FinFE social sentiment | 923 (−1,097) | 77.03 | **80.28** | 79.52 | **FinBERT-Laya ⭐** |
+| FinFE social sentiment | 923 (−1,097) | 77.03 | **80.28** | 79.52 | **FinLaya-FinBERT ⭐** |
 | FinNSP negative presence | 499 (−1) | 94.99 | 95.19 | **95.59** | FinBERT |
-| FinNSP negative subject | 259 (−0) | **96.91** | 95.75 | 95.37 | mmBERT-Laya |
-| CFSC-ABSA aspect-level | 7,870 (−442) | **93.58** | 93.01 | 92.94 | mmBERT-Laya |
+| FinNSP negative subject | 259 (−0) | **96.91** | 95.75 | 95.37 | FinLaya-mmBERT |
+| CFSC-ABSA aspect-level | 7,870 (−442) | **93.58** | 93.01 | 92.94 | FinLaya-mmBERT |
 
-**On FinFE, FinBERT-Laya beats mmBERT-Laya by 3.25 pt** — the largest difference in the whole comparison. The reason: 54.3% of the FinFE evaluation set duplicates training text, and mmBERT-Laya continues from the official laya checkpoint, giving it a memorization edge on "seen" samples. Remove the overlap and that edge vanishes, while FinBERT-Laya's decision head was learned from scratch and generalizes better.
+**On FinFE, FinLaya-FinBERT beats FinLaya-mmBERT by 3.25 pt** — the largest difference in the whole comparison. The reason: 54.3% of the FinFE evaluation set duplicates training text, and FinLaya-mmBERT continues from the official laya checkpoint, giving it a memorization edge on "seen" samples. Remove the overlap and that edge vanishes, while FinLaya-FinBERT's decision head was learned from scratch and generalizes better.
 
 ---
 
 ## 3. Macro-F1
 
-| Task | Protocol | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Protocol | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---|---:|---:|---:|
 | FinFE | full | **0.7690** | 0.7629 | 0.7776 |
 | FinFE | strict | 0.7094 | **0.7371** | 0.7258 |
@@ -70,7 +70,7 @@
 
 ### 4.1 ECE (lower is better)
 
-| Task | Protocol | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Protocol | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---|---:|---:|---:|
 | FinFE | full | 0.0739 | **0.0485** | 0.0947 |
 | FinFE | strict | **0.0628** | 0.0710 | 0.0876 |
@@ -81,7 +81,7 @@
 
 ### 4.2 NLL (lower is better)
 
-| Task | Protocol | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Protocol | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---|---:|---:|---:|
 | FinFE | full | 0.6467 | **0.5878** | 0.6244 |
 | FinFE | strict | 0.6233 | **0.5328** | 0.5713 |
@@ -92,7 +92,7 @@
 
 ### 4.3 Brier (multiclass, lower is better)
 
-| Task | Protocol | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Protocol | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---|---:|---:|---:|
 | FinFE | full | 0.3516 | **0.3259** | 0.3285 |
 | FinFE | strict | 0.3437 | **0.2916** | 0.3066 |
@@ -103,7 +103,7 @@
 
 ### 4.4 AURC (area under the risk–coverage curve, lower is better)
 
-| Task | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---:|---:|---:|
 | FinFE | 0.1184 | 0.0995 | **0.0953** |
 | FinNSP negative presence | **0.0073** | 0.0097 | 0.0040 |
@@ -112,14 +112,14 @@
 
 ### 4.5 Mean confidence
 
-| Task | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---:|---:|---:|
 | FinFE | 0.8517 | 0.8287 | **0.8840** |
 | FinNSP negative presence | 0.9174 | 0.8805 | **0.9852** |
 | FinNSP negative subject | 0.7745 | 0.8172 | **0.9080** |
 | CFSC-ABSA | 0.8883 | 0.8902 | **0.9616** |
 
-> **The FinBERT classifier has the highest confidence overall (0.88–0.99) yet the lowest ECE**, meaning its high confidence is earned. FinBERT-Laya sits lower (0.83–0.89) but has better ECE, meaning it is more conservative. Different strategies; both are usable.
+> **The FinBERT classifier has the highest confidence overall (0.88–0.99) yet the lowest ECE**, meaning its high confidence is earned. FinLaya-FinBERT sits lower (0.83–0.89) but has better ECE, meaning it is more conservative. Different strategies; both are usable.
 
 ---
 
@@ -127,7 +127,7 @@
 
 ### 5.1 Full protocol
 
-| Task | Coverage | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Coverage | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---|---:|---:|---:|
 | FinFE | @50% | 89.50 | **91.39** | 90.99 |
 | FinFE | @80% | 83.79 | **85.09** | 85.02 |
@@ -144,7 +144,7 @@
 
 ### 5.2 Strict protocol
 
-| Task | Coverage | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Coverage | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---|---:|---:|---:|
 | FinFE | @50% | 92.21 | **95.02** | 94.81 |
 | FinFE | @80% | 84.28 | **87.94** | 86.72 |
@@ -159,7 +159,7 @@
 | CFSC-ABSA | @80% | 98.22 | 98.27 | **98.33** |
 | CFSC-ABSA | @90% | **96.82** | 96.75 | 96.43 |
 
-**Under the strict protocol, FinFE @50 reaches 95.02%** — meaning that after removing overlapping samples, FinBERT-Laya can fully automate half the traffic at 95% accuracy.
+**Under the strict protocol, FinFE @50 reaches 95.02%** — meaning that after removing overlapping samples, FinLaya-FinBERT can fully automate half the traffic at 95% accuracy.
 
 ---
 
@@ -167,7 +167,7 @@
 
 ### 6.1 FinFE (3 classes)
 
-| Class | Support | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Class | Support | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---:|---:|---:|---:|
 | negative | 574 | 0.780 | 0.791 | **0.819** |
 | neutral | 560 | **0.696** | 0.611 | 0.639 |
@@ -175,14 +175,14 @@
 
 ### 6.2 FinNSP negative presence (2 classes)
 
-| Class | Support | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Class | Support | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---:|---:|---:|---:|
 | true | 259 | **0.961** | 0.950 | 0.958 |
 | false | 241 | 0.938 | **0.954** | 0.954 |
 
 ### 6.3 FinNSP negative subject (14 classes with support)
 
-| Entity | Support | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Entity | Support | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---:|---:|---:|---:|
 | 以上都不是 | 102 | **0.961** | **0.961** | 0.951 |
 | 小资钱包 | 77 | **1.000** | **1.000** | **1.000** |
@@ -203,13 +203,13 @@
 
 ### 6.4 CFSC-ABSA (3 classes)
 
-| Class | Support | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Class | Support | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---:|---:|---:|---:|
 | negative | 2,146 | **0.948** | 0.944 | 0.943 |
 | neutral | 1,032 | **0.797** | 0.751 | 0.749 |
 | positive | 5,134 | 0.955 | **0.960** | 0.958 |
 
-**`neutral` is the weak spot across the board** (FinFE 0.611–0.696, CFSC 0.749–0.797). mmBERT-Laya leads by 4.6–4.8 pt on CFSC neutral, which is the main reason it leads on Macro-F1 for that task.
+**`neutral` is the weak spot across the board** (FinFE 0.611–0.696, CFSC 0.749–0.797). FinLaya-mmBERT leads by 4.6–4.8 pt on CFSC neutral, which is the main reason it leads on Macro-F1 for that task.
 
 ---
 
@@ -217,7 +217,7 @@
 
 Single RTX 4090, batch=1 serial, weight size counting only the weight file (excluding the `checkpoint_latest/` snapshot).
 
-| | mmBERT-Laya | FinBERT-Laya | FinBERT (single task) | FinBERT (4-task equivalent) |
+| | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT (single task) | FinBERT (4-task equivalent) |
 |---|---:|---:|---:|---:|
 | Parameters | 321.9 M | **117.2 M** | 102.3 M | 409.2 M |
 | Weight size | 614.0 MB | **223.6 MB** | 390.2 MB (fp32) / 195 MB (F16) | 1,560 MB (fp32) / **780 MB** (F16) |
@@ -228,9 +228,9 @@ Single RTX 4090, batch=1 serial, weight size counting only the weight file (excl
 | Peak GPU memory | 1,499 MB | **667 MB** | 486 MB | 4 × 486 = 1,944 MB |
 | Models needed | **1** | **1** | 4 | 4 |
 
-### Change relative to mmBERT-Laya
+### Change relative to FinLaya-mmBERT
 
-| | FinBERT-Laya | FinBERT (4-task equivalent) |
+| | FinLaya-FinBERT | FinBERT (4-task equivalent) |
 |---|---:|---:|
 | Parameters | **−63.6%** | +27.1% |
 | Weight size | **−63.6%** | +27.0% (F16) |
@@ -238,13 +238,13 @@ Single RTX 4090, batch=1 serial, weight size counting only the weight file (excl
 | Throughput | **×2.13** | −31.5% (serial) |
 | GPU memory | **−55.5%** | +29.7% |
 
-> **Key conclusion**: only FinBERT-Laya simultaneously achieves "one model covers every task" and "smaller and faster than the original". The FinBERT classifier is fastest per single task, but four tasks need four models, making its equivalent cost higher than mmBERT-Laya's.
+> **Key conclusion**: only FinLaya-FinBERT simultaneously achieves "one model covers every task" and "smaller and faster than the original". The FinBERT classifier is fastest per single task, but four tasks need four models, making its equivalent cost higher than FinLaya-mmBERT's.
 
 ---
 
 ## 8. Training cost
 
-| | mmBERT-Laya | FinBERT-Laya | FinBERT classifier |
+| | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT classifier |
 |---|---|---|---|
 | Models to train | 1 | 1 | **4** |
 | Optimizer steps | 3,068 | 3,068 | — |
@@ -255,11 +255,11 @@ Single RTX 4090, batch=1 serial, weight size counting only the weight file (excl
 | Starting point | Official laya ckpt (loss 0.3983) | Decision head **randomly initialized** (loss 1.3957) | No ImageNet; pure FinBERT pretraining |
 | Calibration | Automatic temperature fitting + abstention-threshold fitting | Automatic temperature fitting + abstention-threshold fitting | None (raw softmax) |
 
-> **Loss is not comparable across models**: all three start from different points. mmBERT-Laya starts from an already fine-tuned checkpoint, while FinBERT-Laya's decision head and FinBERT's classifiers are random. Compare endpoint metrics only (§1–§5), never the size of the loss drop.
+> **Loss is not comparable across models**: all three start from different points. FinLaya-mmBERT starts from an already fine-tuned checkpoint, while FinLaya-FinBERT's decision head and FinBERT's classifiers are random. Compare endpoint metrics only (§1–§5), never the size of the loss drop.
 
 ### Inference config produced automatically
 
-| | mmBERT-Laya | FinBERT-Laya |
+| | FinLaya-mmBERT | FinLaya-FinBERT |
 |---|---|---|
 | choice temperature | 1.4378 | 1.3531 |
 | noul temperature | 1.4585 | 1.9008 |
@@ -274,23 +274,23 @@ Single RTX 4090, batch=1 serial, weight size counting only the weight file (excl
 | Dimension | Best | Note |
 |---|---|---|
 | FinFE accuracy (full) | **FinBERT** 79.26 | Ahead by 1.24 pt |
-| FinFE accuracy (strict) | **FinBERT-Laya** 80.28 | Ahead by 0.76–3.25 pt |
+| FinFE accuracy (strict) | **FinLaya-FinBERT** 80.28 | Ahead by 0.76–3.25 pt |
 | FinNSP negative presence | **FinBERT** 95.60 | Ahead by 0.40 pt |
-| FinNSP negative subject | **mmBERT-Laya** 96.91 | Ahead by 1.16 pt, driven by long-tail samples |
-| CFSC-ABSA accuracy | **mmBERT-Laya** 93.37 / 93.58 | Ahead by 0.36–0.57 pt |
-| CFSC-ABSA Macro-F1 | **mmBERT-Laya** 0.8993 / 0.9025 | Ahead by 0.008–0.012 |
-| neutral recall (CFSC) | **mmBERT-Laya** 0.797 | Ahead by 4.6 pt |
-| ECE (FinFE full) | **FinBERT-Laya** 0.0485 | Ahead by 0.025 |
+| FinNSP negative subject | **FinLaya-mmBERT** 96.91 | Ahead by 1.16 pt, driven by long-tail samples |
+| CFSC-ABSA accuracy | **FinLaya-mmBERT** 93.37 / 93.58 | Ahead by 0.36–0.57 pt |
+| CFSC-ABSA Macro-F1 | **FinLaya-mmBERT** 0.8993 / 0.9025 | Ahead by 0.008–0.012 |
+| neutral recall (CFSC) | **FinLaya-mmBERT** 0.797 | Ahead by 4.6 pt |
+| ECE (FinFE full) | **FinLaya-FinBERT** 0.0485 | Ahead by 0.025 |
 | ECE (FinNSP/CFSC) | **FinBERT** 0.0311 / 0.0339 | Ahead by 0.02–0.13 |
-| NLL | **FinBERT** on 3 of 4 tasks | FinFE goes to FinBERT-Laya |
-| Brier | Mixed | FinBERT-Laya wins on FinFE and negative subject |
-| AURC | **FinBERT** 2/4, mmBERT-Laya 2/4 | FinBERT-Laya 0/4 |
-| Selective accuracy @50 | **FinBERT-Laya** (FinFE strict 95.02) | — |
-| Parameters / size | **FinBERT** (single task) / **FinBERT-Laya** (all tasks) | — |
+| NLL | **FinBERT** on 3 of 4 tasks | FinFE goes to FinLaya-FinBERT |
+| Brier | Mixed | FinLaya-FinBERT wins on FinFE and negative subject |
+| AURC | **FinBERT** 2/4, FinLaya-mmBERT 2/4 | FinLaya-FinBERT 0/4 |
+| Selective accuracy @50 | **FinLaya-FinBERT** (FinFE strict 95.02) | — |
+| Parameters / size | **FinBERT** (single task) / **FinLaya-FinBERT** (all tasks) | — |
 | Latency / throughput | **FinBERT** (single task) | — |
 | GPU memory | **FinBERT** 486 MB | — |
-| Long context | **mmBERT-Laya** 8,192 | FinBERT only reaches 512 |
-| Training speed | **FinBERT** 5.4 min (but trains 4 models) | FinBERT-Laya trains 1 in 23 min |
+| Long context | **FinLaya-mmBERT** 8,192 | FinBERT only reaches 512 |
+| Training speed | **FinBERT** 5.4 min (but trains 4 models) | FinLaya-FinBERT trains 1 in 23 min |
 | Cost of adding a class | **The Laya pair** (edit the question text) | FinBERT must retrain |
 
 ---
@@ -301,9 +301,9 @@ Single RTX 4090, batch=1 serial, weight size counting only the weight file (excl
 Need one weight set covering several question types + confidence/abstention?
 ├─ Yes
 │  ├─ Tight on GPU memory/latency, or strict long-tail entity requirements?
-│  │  ├─ Long-tail entities matter → mmBERT-Laya (neg_subject mF1 0.8129, 8192 context)
-│  │  └─ Resource-sensitive       → FinBERT-Laya (117M / 223.6 MB / 8.66 ms, on par elsewhere)
-│  └─ Neither is a concern → Either works; FinBERT-Laya is leaner
+│  │  ├─ Long-tail entities matter → FinLaya-mmBERT (neg_subject mF1 0.8129, 8192 context)
+│  │  └─ Resource-sensitive       → FinLaya-FinBERT (117M / 223.6 MB / 8.66 ms, on par elsewhere)
+│  └─ Neither is a concern → Either works; FinLaya-FinBERT is leaner
 └─ No, just want the strongest single task
    └─ FinBERT classifier (FinFE 79.26, 5.93 ms, but one model per task)
 ```
@@ -311,8 +311,8 @@ Need one weight set covering several question types + confidence/abstention?
 ### In one line each
 
 - **FinBERT**: fastest and most accurate per single task, but needs 4 models — 780 MB and 1,944 MB of GPU memory in equivalent terms.
-- **FinBERT-Laya**: one 223.6 MB model covers everything, at accuracy on par with the 322M version and better on FinFE under the strict protocol.
-- **mmBERT-Laya**: the only option that handles 8,192-token inputs, and the strongest on long-tail entities.
+- **FinLaya-FinBERT**: one 223.6 MB model covers everything, at accuracy on par with the 322M version and better on FinFE under the strict protocol.
+- **FinLaya-mmBERT**: the only option that handles 8,192-token inputs, and the strongest on long-tail entities.
 
 ---
 

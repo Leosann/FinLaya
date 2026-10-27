@@ -1,11 +1,20 @@
-# FinLaya — Chinese financial fine-tuning of the Laya decision model
+# FinLaya-mmBERT — Laya decision model with the mmBERT encoder
 
-This directory holds all of the Laya side: code, configs, logs, and evaluation reports. The main experiment write-up is in **[REPORT.md](REPORT.md)**; the two-model comparison is in **[../docs/COMPARE_Laya_vs_FinBERT.md](../docs/COMPARE_Laya_vs_FinBERT.md)**.
+> **Where this sits in the project.** FinLaya is a family of two models that share one Laya decision head and differ only in the encoder:
+>
+> | Model | Directory | Encoder | Params |
+> |---|---|---|---:|
+> | **FinLaya-mmBERT** ← *this one* | `FinLaya-mmBERT/` | `jhu-clsp/mmBERT-base` | 321.9 M |
+> | **FinLaya-FinBERT** | [`FinLaya-FinBERT/`](../FinLaya-FinBERT/README.md) | `yiyanghkust/finbert-tone-chinese` | 117.2 M |
+>
+> This directory is the **mmBERT variant**: the original, full-scale experiment. The FinBERT variant is a later ablation that swaps in a much smaller, finance-pretrained encoder. Neither name refers to the other — check the encoder column when in doubt.
+
+This directory holds the full mmBERT run: code, configs, logs, and evaluation reports. The main experiment write-up is in **[REPORT.md](REPORT.md)**; the comparison against the discriminative baseline is in **[../docs/COMPARE_Laya_vs_FinBERT.md](../docs/COMPARE_Laya_vs_FinBERT.md)**.
 
 ## Layout
 
 ```
-FinLaya/
+FinLaya-mmBERT/
 ├─ REPORT.md                    main experiment report (conclusions / data / training / pitfalls / quick numbers)
 ├─ scripts/                     runnable scripts, in execution order
 │  ├─ train.sh                  dryrun | train | eval | all
@@ -21,7 +30,7 @@ FinLaya/
 │  └─ baseline/                 base_* unfine-tuned baseline reports
 └─ tokenizer/                   tokenizer bundled with the ckpt (3 files)
 
-../common/laya/                  evaluation tools shared with FinBertLaya
+../common/laya/                  evaluation tools shared with FinLaya-FinBERT
   ├─ run_eval.py                 [core] Router.register a local ckpt + evaluate
   ├─ laya_metrics.py             recompute every metric from a report; supports --strict
   ├─ check_leak.py               audit train/test `state` overlap

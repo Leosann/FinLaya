@@ -48,7 +48,7 @@ Both measurement rounds ran on an RTX 4090 24 GB with all other processes idle.
 
 ## Measured results
 
-| | Laya (mmBERT) | FinBERT-Laya | FinBERT classifier |
+| | Laya (mmBERT) | FinLaya-FinBERT | FinBERT classifier |
 |---|---:|---:|---:|
 | Parameters | 321.9 M | **117.2 M** | 102.3 M |
 | Weight size | 614.0 MB (170 tensors, all F16) | **223.6 MB** (235 tensors, all F16) | 390 MB (fp32) → 195 MB (F16) |
@@ -58,7 +58,7 @@ Both measurement rounds ran on an RTX 4090 24 GB with all other processes idle.
 | Throughput batch=32 | — | — | 2857.7 QPS |
 | Peak GPU memory | 1499 MB | **667 MB** | 486 MB |
 
-> On the size figure: `weights_only_mb` / `dir_size_mb` skip `checkpoint_latest/` by default. That is a mid-training snapshot holding the same weights as the top-level `model.safetensors`; including it nearly doubles the reported size (Laya would show 1228 MB, FinBERT-Laya 447 MB).
+> On the size figure: `weights_only_mb` / `dir_size_mb` skip `checkpoint_latest/` by default. That is a mid-training snapshot holding the same weights as the top-level `model.safetensors`; including it nearly doubles the reported size (Laya would show 1228 MB, FinLaya-FinBERT 447 MB).
 
 > The 195.1 MB figure for FinBERT converted to F16 comes from a separate earlier measurement whose conversion code was not kept.
 > `to_fp16.py` has since been written to reproduce it the same way:
@@ -81,8 +81,8 @@ Data sources:
 
 | File | Contents |
 |---|---|
-| `FinLaya/reports/eval/ft_*_metrics.json` | Laya, full protocol |
-| `FinLaya/reports/eval/ft_*_metrics_strict.json` | Laya, strict protocol |
+| `FinLaya-mmBERT/reports/eval/ft_*_metrics.json` | Laya, full protocol |
+| `FinLaya-mmBERT/reports/eval/ft_*_metrics_strict.json` | Laya, strict protocol |
 | `FinBert/reports/finbert_all.json` | FinBERT, full + strict protocol |
 | `common/reports/deploy_metrics.json` | Deployment metrics for both |
 

@@ -22,7 +22,7 @@ base_model:
 - yiyanghkust/finbert-tone-chinese
 ---
 
-# FinBERT-Laya (117M)
+# FinLaya-FinBERT (117M)
 
 Chinese financial sentiment as a decision problem. **A third of the parameters, the same accuracy as the 322M version.**
 
@@ -43,7 +43,7 @@ Sentiment analysis is reframed as *decisions over a closed option set*: the mode
 
 Laya builds its decision head from `encoder.config.hidden_size`. mmBERT-base and FinBERT are both 768, so the head shape is identical (14.97 M — not a single parameter differs). The 205 M saved lives entirely in the encoder embedding:
 
-| | mmBERT-Laya | FinBERT-Laya |
+| | FinLaya-mmBERT | FinLaya-FinBERT |
 |---|---:|---:|
 | Vocabulary | 256,000 | 21,128 |
 | Embedding parameters | 196.61 M | **16.23 M** |
@@ -63,7 +63,7 @@ pip install "transformers>=4.48,<5" laya==0.4.15
 import laya
 
 router = laya.Router(device="cuda", preload=False)
-name = router.register("finbert-laya", "zhanghanshuo/FinLaya")   # pass the Hub ID directly
+name = router.register("finlaya-finbert", "zhanghanshuo/FinLaya")   # pass the Hub ID directly
 
 questions = {
     "sentiment_social": {
@@ -84,11 +84,11 @@ print(ans["sentiment_social"])          # predicted label + probability distribu
 Or download first, then register from a local path:
 
 ```bash
-huggingface-cli download zhanghanshuo/FinLaya --local-dir finbert-laya
+huggingface-cli download zhanghanshuo/FinLaya --local-dir finlaya-finbert
 ```
 
 ```python
-name = router.register("finbert-laya", "./finbert-laya")
+name = router.register("finlaya-finbert", "./finlaya-finbert")
 ```
 
 `criteria` must match the training-time definition **exactly**. The complete set is in `questions.json` in this repository.
@@ -129,7 +129,7 @@ All three datasets come from [CFLEB](https://github.com/ssymmetry/BBT-FinCUGE-Ap
 
 Against the 322M version:
 
-| Task | Protocol | mmBERT-Laya (322M) | **This model (117M)** | Delta |
+| Task | Protocol | FinLaya-mmBERT (322M) | **This model (117M)** | Delta |
 |---|---|---:|---:|---:|
 | FinFE | strict | 77.03 | **80.28** | **+3.25 pt** |
 | FinNSP negative presence | full | 95.00 | 95.20 | +0.20 pt |

@@ -184,12 +184,12 @@ reports/                       base_*.json (zero-shot) + ft_*.json (after fine-t
 train.sh / baseline.sh / eval_ft.sh / run_eval.py / check_leak.py / strict_acc.py (the last four now live in common/laya/)
 ```
 
-### 4.2 Local repository layout (`FinLaya/`)
+### 4.2 Local repository layout (`FinLaya-mmBERT/`)
 
-Configs, tokenizer, every evaluation report (JSON + Markdown), and training logs are all under `FinLaya/`:
+Configs, tokenizer, every evaluation report (JSON + Markdown), and training logs are all under `FinLaya-mmBERT/`:
 
 ```
-FinLaya/
+FinLaya-mmBERT/
 ├─ README.md                   directory guide + execution order + quick numbers
 ├─ REPORT.md                   this document
 ├─ scripts/                    train.sh · baseline.sh · eval_ft.sh

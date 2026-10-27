@@ -32,6 +32,20 @@
 
 **结论：可以，且无需修改 laya 任何源码。**
 
+### 模型命名速查
+
+`FinLaya` 是**系列名**，指两个共用同一种决策头、只有 encoder 不同的 Laya 模型：
+
+| 本仓库内的名字 | 目录 | encoder | 参数量 | 也叫 |
+|---|---|---|---:|---|
+| **FinLaya-mmBERT** | `FinLaya-mmBERT/` | `jhu-clsp/mmBERT-base` | 321.9 M | 主实验、准确率基准 |
+| **FinLaya-FinBERT** | `FinLaya-FinBERT/` | `yiyanghkust/finbert-tone-chinese` | 117.2 M | encoder 替换方案，**Hugging Face 上的那个** |
+
+两个容易混淆的点：
+
+- Hugging Face 仓库叫 [`zhanghanshuo/FinLaya`](https://huggingface.co/zhanghanshuo/FinLaya)，但里面放的是 **FinLaya-FinBERT**，不是 mmBERT 版。仓库名早于拆分成两个变体。
+- 第三个模型 **FinBERT**（`FinBert/`）是完全不同的架构——四个独立分类头，没有 Laya 决策头。它是判别式基线，不是 FinLaya 的变体。
+
 ## 关键结论
 
 ### 一、encoder 替换属于框架原生能力，非侵入式改造
@@ -55,7 +69,7 @@ parser.add_argument("--base", "--model", dest="model_dir", ...)
 
 ### 二、参数量差异几乎全部来自多语言词表 embedding
 
-| | mmBERT-Laya | FinBERT-Laya |
+| | FinLaya-mmBERT | FinLaya-FinBERT |
 |---|---:|---:|
 | 词表大小 | 256,000 | 21,128 |
 | **embedding 参数** | **196.61 M** | **16.23 M** |
@@ -67,7 +81,7 @@ parser.add_argument("--base", "--model", dest="model_dir", ...)
 
 ### 三、精度未退化，FinFE 严格口径下反超
 
-| 任务 | 口径 | mmBERT-Laya (322M) | **FinBERT-Laya (117M)** | FinBERT 分类头 (102M) |
+| 任务 | 口径 | FinLaya-mmBERT (322M) | **FinLaya-FinBERT (117M)** | FinBERT 分类头 (102M) |
 |---|---|---:|---:|---:|
 | FinFE 社交情绪 | 全量 | 77.97 | 78.02 | **79.26** |
 | FinFE 社交情绪 | 严格 | 77.03 | **80.28** | 79.52 |
@@ -75,11 +89,11 @@ parser.add_argument("--base", "--model", dest="model_dir", ...)
 | FinNSP 负面主体 | 全量 | **96.91** | 95.75 | 95.37 |
 | CFSC-ABSA 方面级 | 全量 | **93.37** | 93.01 | 92.78 |
 
-**FinFE 严格口径 +3.25 pt** 是三组对比中差异最大的一项。归因：FinFE 评测集有 54.3% 的样本与训练集文本完全重复，mmBERT-Laya 从 laya 官方 checkpoint 续训，在已见样本上具备记忆优势；剔除重叠后该优势消失，而 FinBERT-Laya 的决策头为随机初始化、从零学习，泛化表现更优。
+**FinFE 严格口径 +3.25 pt** 是三组对比中差异最大的一项。归因：FinFE 评测集有 54.3% 的样本与训练集文本完全重复，FinLaya-mmBERT 从 laya 官方 checkpoint 续训，在已见样本上具备记忆优势；剔除重叠后该优势消失，而 FinLaya-FinBERT 的决策头为随机初始化、从零学习，泛化表现更优。
 
 ### 四、部署侧收益
 
-| | mmBERT-Laya | **FinBERT-Laya** | 变化 |
+| | FinLaya-mmBERT | **FinLaya-FinBERT** | 变化 |
 |---|---:|---:|---:|
 | 参数量 | 321.9 M | **117.2 M** | **−63.6%** |
 | 权重体积 | 614.0 MB | **223.6 MB** | **−63.6%** |
@@ -89,11 +103,13 @@ parser.add_argument("--base", "--model", dest="model_dir", ...)
 
 ## 三个模型
 
-| 模型 | encoder | 决策头 | 参数量 | 定位 |
-|---|---|---|---:|---|
-| **FinLaya** | mmBERT 322M | Laya 原生 15M | 321.9 M | 主实验，准确率基准，唯一支持 8192 长上下文 |
-| **FinBert** | FinBERT 102M | 4 个独立分类头 | 102.3 M | 判别式基线，单任务最快最准，但需维护 4 个模型 |
-| **FinBertLaya** | FinBERT 102M | Laya 原生 15M | **117.2 M** | encoder 替换方案，单模型覆盖 4 种题型，延迟减半 |
+| 模型 | 目录 | encoder | 决策头 | 参数量 | 定位 |
+|---|---|---|---|---:|---|
+| **FinLaya-mmBERT** | `FinLaya-mmBERT/` | mmBERT 322M | Laya 原生 15M | 321.9 M | 主实验，准确率基准；唯一架构上支持长上下文的（训练用 1024 token，上限 8192） |
+| **FinLaya-FinBERT** | `FinLaya-FinBERT/` | FinBERT 102M | Laya 原生 15M | **117.2 M** | encoder 替换方案，单模型覆盖 4 种题型，延迟减半 |
+| **FinBERT** | `FinBert/` | FinBERT 102M | 4 个独立分类头 | 102.3 M | 判别式基线，单任务最快最准，但需维护 4 个模型 |
+
+> **命名说明。** 单独说 `FinLaya` 指的是这个模型系列，不是某个具体模型。两个 Laya 模型的唯一区别是 encoder——看结果表时请对准这一列。另外 Hugging Face 仓库 [`zhanghanshuo/FinLaya`](https://huggingface.co/zhanghanshuo/FinLaya) 里放的是 **FinLaya-FinBERT**（117.2 M），仓库名早于拆分成两个变体。
 
 ## 实验结果
 
@@ -101,7 +117,7 @@ parser.add_argument("--base", "--model", dest="model_dir", ...)
 
 严格口径 = 剔除与训练集文本 SHA256 完全相同的样本（FinFE 剔除 1,097/2,020，CFSC 剔除 442/8,312，FinNSP 剔除 1/500）。
 
-| 任务 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| 任务 | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---|---|---|
 | FinFE 准确率 | 77.97 / 77.03 | 78.02 / **80.28** | **79.26** / 79.52 |
 | FinFE Macro-F1 | **0.7690** / 0.7094 | 0.7629 / **0.7371** | 0.7776 / 0.7258 |
@@ -114,7 +130,7 @@ parser.add_argument("--base", "--model", dest="model_dir", ...)
 
 ### 概率校准（越低越好）
 
-| 任务 | 指标 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| 任务 | 指标 | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---|---:|---:|---:|
 | FinFE | ECE | 0.0739 | **0.0485** | 0.0947 |
 | FinFE | NLL | 0.6467 | **0.5878** | 0.6244 |
@@ -126,7 +142,7 @@ parser.add_argument("--base", "--model", dest="model_dir", ...)
 
 ### 选择性准确率（按置信度取前 X% 自动处理，全量）
 
-| 任务 | 覆盖 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| 任务 | 覆盖 | FinLaya-mmBERT | FinLaya-FinBERT | FinBERT |
 |---|---|---:|---:|---:|
 | FinFE | @50% | 89.50 | **91.39** | 90.99 |
 | FinFE | @80% | 83.79 | **85.09** | 85.02 |
@@ -135,7 +151,7 @@ parser.add_argument("--base", "--model", dest="model_dir", ...)
 | FinNSP 负面主体 | @50% | 99.23 | 98.46 | **99.23** |
 | CFSC-ABSA | @50% | 98.65 | 99.47 | **99.83** |
 
-严格口径下 FinFE 的 @50 差距更为明显：**mmBERT 92.21 / FinBERT-Laya 95.02 / FinBERT 94.81**。
+严格口径下 FinFE 的 @50 差距更为明显：**mmBERT 92.21 / FinLaya-FinBERT 95.02 / FinBERT 94.81**。
 
 > 完整版（含各类别逐类召回、AURC、mean confidence、训练成本、选型决策树）见 [`docs/THREE_WAY_COMPARISON.md`](docs/THREE_WAY_COMPARISON.md)。
 
@@ -166,18 +182,18 @@ python datasets/validate_laya_format.py # 校验 qid 定义一致性（退出码
 ### 训练 FinLaya（mmBERT encoder）
 
 ```bash
-bash FinLaya/scripts/train.sh dryrun   # 先空跑，确认 53,341 行 / 55,562 题能被解析
-bash FinLaya/scripts/train.sh train    # 4 epoch
+bash FinLaya-mmBERT/scripts/train.sh dryrun   # 先空跑，确认 53,341 行 / 55,562 题能被解析
+bash FinLaya-mmBERT/scripts/train.sh train    # 4 epoch
 ```
 
-### 训练 FinBertLaya（FinBERT encoder）
+### 训练 FinLaya-FinBERT（FinBERT encoder）
 
 ```bash
 # 1) 构建 base checkpoint：FinBERT encoder + 随机初始化决策头（约 1 分钟）
-python FinBertLaya/scripts/make_fb_base.py
+python FinLaya-FinBERT/scripts/make_fb_base.py
 
 # 2) 训练（超参与 mmBERT 版逐项一致）
-bash FinBertLaya/scripts/train.sh
+bash FinLaya-FinBERT/scripts/train.sh
 ```
 
 ### 训练 FinBert（分类头基线）
@@ -191,11 +207,11 @@ $ENV_PY FinBert/scripts/finbert_baseline.py train
 
 ```bash
 # FinLaya
-bash FinLaya/scripts/eval_ft.sh
-bash FinLaya/scripts/eval_ft.sh finfe_eval              # 只跑一个
+bash FinLaya-mmBERT/scripts/eval_ft.sh
+bash FinLaya-mmBERT/scripts/eval_ft.sh finfe_eval              # 只跑一个
 
-# FinBertLaya
-bash FinBertLaya/scripts/eval.sh
+# FinLaya-FinBERT
+bash FinLaya-FinBERT/scripts/eval.sh
 
 # FinBert（必须分批，一次跑全部会被 OOM killer 杀掉且不留 Traceback）
 $ENV_PY FinBert/scripts/fb_eval.py absa
@@ -229,14 +245,14 @@ python common/laya/laya_metrics.py reports/ft_finfe_eval.json $LAYA_DATA/finfe_e
 
 ```bash
 pip install -U huggingface_hub
-huggingface-cli download zhanghanshuo/FinLaya --local-dir weights/finbert-laya-hf
+huggingface-cli download zhanghanshuo/FinLaya --local-dir weights/finlaya-finbert-hf
 ```
 
 国内网络可加镜像：
 
 ```bash
 export HF_ENDPOINT=https://hf-mirror.com
-huggingface-cli download zhanghanshuo/FinLaya --local-dir weights/finbert-laya-hf
+huggingface-cli download zhanghanshuo/FinLaya --local-dir weights/finlaya-finbert-hf
 ```
 
 下载目录即为 `laya.load()` 认的标准布局，可直接 `Router.register(name, path)`。
@@ -244,22 +260,22 @@ huggingface-cli download zhanghanshuo/FinLaya --local-dir weights/finbert-laya-h
 > **如果下载下来是空的**，说明 Hub 仓库里的文件目前多套了一层 `hf-ready/` 前缀 —— 上次上传漏了 `path_in_repo` 参数。在修复之前先按显式路径取：
 >
 > ```bash
-> huggingface-cli download zhanghanshuo/FinLaya --include "hf-ready/*" --local-dir weights/finbert-laya-hf
-> mv weights/finbert-laya-hf/hf-ready/* weights/finbert-laya-hf/ && rmdir weights/finbert-laya-hf/hf-ready
+> huggingface-cli download zhanghanshuo/FinLaya --include "hf-ready/*" --local-dir weights/finlaya-finbert-hf
+> mv weights/finlaya-finbert-hf/hf-ready/* weights/finlaya-finbert-hf/ && rmdir weights/finlaya-finbert-hf/hf-ready
 > ```
 >
 > 一步修复见 [`weights/HF_UPLOAD_GUIDE.md`](weights/HF_UPLOAD_GUIDE.md)。
 
 ### 本仓库内（GitHub）
 
-**FinBERT-Laya（117.2M）** 同时随仓库提供，分 3 片存放（超过 GitHub 单文件 100 MB 限制）：
+**FinLaya-FinBERT（117.2M）** 同时随仓库提供，分 3 片存放（超过 GitHub 单文件 100 MB 限制）：
 
 ```bash
-cd weights/finbert-laya
+cd weights/finlaya-finbert
 bash restore.sh        # 合并 + SHA256 校验
 ```
 
-合并后布局与 HF 版本一致。详见 [`weights/finbert-laya/README.md`](weights/finbert-laya/README.md)。
+合并后布局与 HF 版本一致。详见 [`weights/finlaya-finbert/README.md`](weights/finlaya-finbert/README.md)。
 
 **FinBERT 四个分类头**（fp32 各 391 MB，合计 1.56 GB）不入库，重新训练即可获得，命令见上文。
 
@@ -327,16 +343,16 @@ bash restore.sh        # 合并 + SHA256 校验
 ## 项目结构
 
 ```
-FinLaya/          mmBERT encoder + Laya 决策头（322M）主实验
+FinLaya-mmBERT/       mmBERT encoder + Laya 决策头（322M）主实验
   ├─ scripts/     train.sh · baseline.sh · eval_ft.sh
   ├─ configs/     rl_agent_config.json · questions.json · train_report.json
   ├─ logs/        train_run · dryrun · baseline · eval_ft
   └─ reports/     eval/（ft_*）· baseline/（base_*）
-FinBertLaya/      FinBERT encoder + Laya 决策头（117M）
+FinLaya-FinBERT/      FinBERT encoder + Laya 决策头（117M）已发布的权重
   ├─ scripts/     make_fb_base.py · train.sh · eval.sh
   ├─ configs/     fb_rl_agent_config.json · fb_train_report.json
   └─ reports/     fb_*
-FinBert/          FinBERT encoder + 四任务分类头（102M）
+FinBert/              FinBERT encoder + 四任务分类头（102M）判别式基线
   ├─ scripts/     setup_finbert.sh · finbert_baseline.py · fb_eval.py
   └─ reports/     finbert_all.json
 common/           三模型共用
@@ -344,7 +360,7 @@ common/           三模型共用
   ├─ deploy_metrics.py · to_fp16.py · make_compare.py
   └─ reports/     deploy_metrics.json
 datasets/         数据下载说明 + 转换/校验脚本
-weights/          已训练的 FinBERT-Laya 权重（分片 + 合并脚本）
+weights/          已训练的 FinLaya-FinBERT 权重（分片 + 合并脚本）
 docs/             三份对照报告
 ```
 
@@ -352,7 +368,7 @@ docs/             三份对照报告
 
 | 文档 | 内容 |
 |---|---|
-| [`FinLaya/REPORT.md`](FinLaya/REPORT.md) | Laya 单模型主实验：结论、数据、训练过程、踩坑、数字速查 |
+| [`FinLaya-mmBERT/REPORT.md`](FinLaya-mmBERT/REPORT.md) | Laya 单模型主实验：结论、数据、训练过程、踩坑、数字速查 |
 | [`docs/COMPARE_Laya_vs_FinBERT.md`](docs/COMPARE_Laya_vs_FinBERT.md) | Laya vs FinBERT 分类头两方对照 |
 | [`docs/FINBERT_AS_ENCODER.md`](docs/FINBERT_AS_ENCODER.md) | encoder 替换专题：源码依据、做法、三方对比、局限 |
 | [`docs/THREE_WAY_COMPARISON.md`](docs/THREE_WAY_COMPARISON.md) | 三模型全指标对照：含逐类召回、AURC、训练成本、选型决策树 |
@@ -362,8 +378,8 @@ docs/             三份对照报告
 1. **FinFE 全量口径存在 54.3% 训练集重叠**。77.97 / 78.02 / 79.26 不宜作为泛化能力引用，请以严格口径为准。
 2. **FinNSP 负面主体任务长尾严重**。259 条中 102 条为「以上都不是」，其余 157 条分散在 13 个实体上，多数仅有 1~7 条。`0.8129 / 0.7003 / 0.6838` 的差距几乎全部来自「钱宝」（4 条）与「摩尔龙」（1 条）。
 3. **`noul` 温度在 34 条样本上拟合**（`train_report.json` 带警告），`neg_has` 的 ECE 可信度低于其他任务。
-4. **FinBERT-Laya 存在 512 截断**。FinNSP 有 5.00% 训练样本超长（p99=1,851，max=6,777），尾部信息会丢失。这是 BERT 与 mmBERT（8192）的架构性差距。
-5. **两个 Laya 的起点不对等**。FinBERT-Laya 决策头随机初始化（loss 1.3957），mmBERT-Laya 从官方 checkpoint 续训（0.3983）。只能比较终点，不能比较收敛速度。
+4. **FinLaya-FinBERT 存在 512 截断**。FinNSP 有 5.00% 训练样本超长（p99=1,851，max=6,777），尾部信息会丢失。这是 BERT 与 mmBERT（8192）的架构性差距。
+5. **两个 Laya 的起点不对等**。FinLaya-FinBERT 决策头随机初始化（loss 1.3957），FinLaya-mmBERT 从官方 checkpoint 续训（0.3983）。只能比较终点，不能比较收敛速度。
 6. **单 seed**。1 pt 以内的差距不显著；FinFE 严格口径的 3.25 pt 差距较大，仍建议多 seed 复核。
 
 ## 引用
