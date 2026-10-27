@@ -1,113 +1,113 @@
-# FinBertLaya — FinBERT 作 encoder 的 Laya
+# FinBertLaya — Laya with FinBERT as the encoder
 
-把 Laya 的 mmBERT encoder（322M）换成 FinBERT（102M），**不改 laya 一行源码**，得到 117.2M 的决策模型。完整分析见 **[../docs/FINBERT_AS_ENCODER.md](../docs/FINBERT_AS_ENCODER.md)**。
+Swapping Laya's mmBERT encoder (322M) for FinBERT (102M), **with no changes to the laya source**, yields a 117.2M decision model. Full analysis in **[../docs/FINBERT_AS_ENCODER.md](../docs/FINBERT_AS_ENCODER.md)**.
 
 | | |
 |---|---|
-| encoder | `yiyanghkust/finbert-tone-chinese`（BertModel 102.27M） |
-| 决策头 | Laya 原生（14.97M，与 mmBERT 版**完全一致**） |
-| 合计 | **117.24M**（mmBERT 版 321.9M，−63.6%） |
-| 训练 | 4 epoch / 3,068 步 / **23 分钟** / 显存 ~3.8 GB |
-| 关键结果 | FinFE 严格口径 **80.28%**（mmBERT 版 77.03%，**+3.25 pt**） |
-| 部署 | 223.6 MB / 8.66 ms p50 / 113 QPS / 667 MB 显存 |
+| Encoder | `yiyanghkust/finbert-tone-chinese` (BertModel 102.27M) |
+| Decision head | Laya native (14.97M, **identical** to the mmBERT version) |
+| Total | **117.24M** (mmBERT version 321.9M, −63.6%) |
+| Training | 4 epochs / 3,068 steps / **23 minutes** / ~3.8 GB GPU memory |
+| Key result | FinFE strict protocol **80.28%** (mmBERT version 77.03%, **+3.25 pt**) |
+| Deployment | 223.6 MB / 8.66 ms p50 / 113 QPS / 667 MB GPU memory |
 
-## 目录结构
+## Layout
 
 ```
 FinBertLaya/
 ├─ scripts/
-│  ├─ make_fb_base.py    [核心] 造 FinBERT-Laya base checkpoint
-│  ├─ train.sh           RLCD 训练（超参与 mmBERT 版逐项一致）
-│  └─ eval.sh            三测试集评测 + 指标复算
+│  ├─ make_fb_base.py    [core] build the FinBERT-Laya base checkpoint
+│  ├─ train.sh           RLCD training (hyperparameters identical to the mmBERT version)
+│  └─ eval.sh            evaluate the three test sets + recompute metrics
 ├─ configs/
-│  ├─ fb_rl_agent_config.json   训练产出的推理配置（温度 / 弃权阈值）
-│  └─ fb_train_report.json      before/after + 温度标定
+│  ├─ fb_rl_agent_config.json   inference config produced by training (temperatures / abstention thresholds)
+│  └─ fb_train_report.json      before/after + temperature fitting
 ├─ logs/
-│  ├─ fb_train.log       训练日志（含 before/after 表）
-│  └─ fb_eval.log        三测试集评测输出
+│  ├─ fb_train.log       training log (including the before/after table)
+│  └─ fb_eval.log        output from evaluating the three test sets
 └─ reports/
-   ├─ fb_*_eval.json            laya-evals 原始报告
-   └─ fb_*_metrics{,_strict}.json  复算指标（全量 / 严格）
+   ├─ fb_*_eval.json               raw laya-evals reports
+   └─ fb_*_metrics{,_strict}.json  recomputed metrics (full / strict)
 ```
 
-## 为什么不用改源码
+## Why no source changes are needed
 
-三处源码依据（`laya 0.4.15`）：
+Three pieces of source evidence (`laya 0.4.15`):
 
-1. `DecisionModel.__init__`：`d = encoder.config.hidden_size`，`nhead = max(1, d // 64)` —— 决策头按 encoder 动态构建
-2. `build_model`：用通用 `AutoModel.from_pretrained(cfg["encoder"])`，`cfg["encoder"]` 接受任意 HF ID
-3. `laya-train --base` 的 `dest` 是 `model_dir`，接受任意路径
+1. `DecisionModel.__init__`: `d = encoder.config.hidden_size`, `nhead = max(1, d // 64)` — the decision head is built from the encoder
+2. `build_model`: uses a generic `AutoModel.from_pretrained(cfg["encoder"])`, and `cfg["encoder"]` accepts any HF ID
+3. `laya-train --base` has `dest` set to `model_dir`, accepting any path
 
-唯一硬前提是 **hidden_size 一致**。mmBERT-base 与 FinBERT 都是 **768**，所以决策头形状不变（14.97M 一模一样）。
+The only hard prerequisite is a matching **hidden_size**. mmBERT-base and FinBERT are both **768**, so the decision head keeps its shape (14.97M, exactly the same).
 
-## 运行
+## Running
 
 ```bash
 export LAYA_ROOT=/data/laya-fin
 export HF_ENDPOINT=https://hf-mirror.com
-export HF_HOME=$LAYA_ROOT/hf_cache
+export HF_HOME="$LAYA_ROOT/hf_cache"
 
-# 1) 造 base checkpoint：encoder 载 FinBERT 预训练权重，决策头随机初始化
+# 1) Build the base checkpoint: encoder loads FinBERT weights, decision head randomly initialized
 python scripts/make_fb_base.py
 
-# 2) dryrun（应输出 53341 行 / 55562 题 / skipped {}）
-laya-train --data $LAYA_ROOT/laya/all_train.jsonl --eval $LAYA_ROOT/laya/finfe_eval.jsonl \
-  --out $LAYA_ROOT/fb_ckpt --base $LAYA_ROOT/fb_base --dry-run
+# 2) Dry run (expect 53341 lines / 55562 questions / skipped {})
+laya-train --data "$LAYA_ROOT/laya/all_train.jsonl" --eval "$LAYA_ROOT/laya/finfe_eval.jsonl" \
+  --out "$LAYA_ROOT/fb_ckpt" --base "$LAYA_ROOT/fb_base" --dry-run
 
-# 3) 训练
+# 3) Train
 bash scripts/train.sh
 
-# 4) 评测
+# 4) Evaluate
 bash scripts/eval.sh
-bash scripts/eval.sh finfe_eval      # 只跑一个
+bash scripts/eval.sh finfe_eval      # a single dataset
 
-# 5) 部署指标（laya env 下）
+# 5) Deployment metrics (in the laya env)
 python ../common/deploy_metrics.py fb_laya
 ```
 
-## base checkpoint 里改了什么
+## What the base checkpoint changes
 
-`make_fb_base.py` 从 mmBERT 版的 `rl_agent_config.json` 复制骨架，只改四处：
+`make_fb_base.py` copies the skeleton from the mmBERT version's `rl_agent_config.json` and changes only four things:
 
-| 字段 | 原值 | 新值 | 原因 |
+| Field | Original | New | Reason |
 |---|---|---|---|
-| `encoder` | `jhu-clsp/mmBERT-base` | `yiyanghkust/finbert-tone-chinese` | 换 encoder |
-| `max_len` | 1024 | **512** | BERT 的 `max_position_embeddings` 上限 |
-| `temperature` | `[1.4378, 1.0, 1.4585]` | `[1.0, 1.0, 1.0]` | 旧温度在 mmBERT 表征上拟合，换 encoder 后失效 |
-| `abstention_thresholds` | 三项 | 删除 | 同上，重训会重新拟合 |
+| `encoder` | `jhu-clsp/mmBERT-base` | `yiyanghkust/finbert-tone-chinese` | swap the encoder |
+| `max_len` | 1024 | **512** | BERT's `max_position_embeddings` ceiling |
+| `temperature` | `[1.4378, 1.0, 1.4585]` | `[1.0, 1.0, 1.0]` | the old temperatures were fitted on mmBERT representations and are invalid after the swap |
+| `abstention_thresholds` | three entries | removed | same reason; retraining refits them |
 
-`training` 字段整体删除，避免继承 mmBERT 那轮的训练元数据。
+The whole `training` field is removed as well, so the mmBERT run's training metadata is not inherited.
 
-## 训练后自动得到
+## Produced automatically after training
 
-| 项 | 值 |
+| Item | Value |
 |---|---|
-| choice 温度 | 1.3531 |
-| noul 温度 | 1.9008 |
-| 弃权阈值 `choice:3-5` | 0.5968 |
-| 弃权阈值 `noul:2` | 0.8953 |
-| 弃权阈值 `choice:11+` | 0.7937 |
-| FinFE 验证集 acc | 0.4386 → **0.7802** |
-| FinFE 验证集 ECE | 0.0967 → **0.0485** |
+| choice temperature | 1.3531 |
+| noul temperature | 1.9008 |
+| Abstention threshold `choice:3-5` | 0.5968 |
+| Abstention threshold `noul:2` | 0.8953 |
+| Abstention threshold `choice:11+` | 0.7937 |
+| FinFE dev accuracy | 0.4386 → **0.7802** |
+| FinFE dev ECE | 0.0967 → **0.0485** |
 
-## 结果速查
+## Quick results
 
-| 任务 | 口径 | n | mmBERT-Laya | **FinBERT-Laya** | delta |
+| Task | Protocol | n | mmBERT-Laya | **FinBERT-Laya** | delta |
 |---|---|---:|---:|---:|---:|
-| FinFE | 全量 | 2,020 | 77.97% | **78.02%** | +0.05 pt |
-| FinFE | 严格 | 923 | 77.03% | **80.28%** | **+3.25 pt** |
-| FinNSP `neg_has` | 全量 | 500 | 95.00% | **95.20%** | +0.20 pt |
-| FinNSP `neg_has` | 严格 | 499 | 94.99% | **95.19%** | +0.20 pt |
-| FinNSP `neg_subject` | 全量 | 259 | **96.91%** | 95.75% | −1.16 pt |
-| CFSC-ABSA | 全量 | 8,312 | **93.37%** | 93.01% | −0.36 pt |
-| CFSC-ABSA | 严格 | 7,870 | **93.58%** | 93.01% | −0.57 pt |
+| FinFE | full | 2,020 | 77.97% | **78.02%** | +0.05 pt |
+| FinFE | strict | 923 | 77.03% | **80.28%** | **+3.25 pt** |
+| FinNSP `neg_has` | full | 500 | 95.00% | **95.20%** | +0.20 pt |
+| FinNSP `neg_has` | strict | 499 | 94.99% | **95.19%** | +0.20 pt |
+| FinNSP `neg_subject` | full | 259 | **96.91%** | 95.75% | −1.16 pt |
+| CFSC-ABSA | full | 8,312 | **93.37%** | 93.01% | −0.36 pt |
+| CFSC-ABSA | strict | 7,870 | **93.58%** | 93.01% | −0.57 pt |
 
-## 两个坑
+## Two pitfalls
 
-1. **`laya_metrics.py` 自己会写 `_metrics.json`**，不要把它的 stdout 重定向到这两个文件——那会把 JSON 覆盖成人类可读文本。`eval.sh` 里已丢 `/dev/null`。
-2. **`--base` 传 HF ID 会失败**：`resolve_checkpoint_dir` 对 Hub ID 走 `snapshot_download` 且 `allow_patterns` 只含 laya 布局文件，FinBERT 仓库没有 `rl_agent_config.json` 就直接报错。必须先造本地 base 目录。
+1. **`laya_metrics.py` writes `_metrics.json` itself.** Do not redirect its stdout to those files — that overwrites the JSON with human-readable text. `eval.sh` discards it to `/dev/null`.
+2. **Passing an HF ID to `--base` fails.** `resolve_checkpoint_dir` runs `snapshot_download` for Hub IDs and its `allow_patterns` only covers laya-layout files; the FinBERT repo has no `rl_agent_config.json`, so it errors out immediately. You must build a local base directory first.
 
-## 未保存的产物
+## What is not stored here
 
-- 训练好的权重（223.6 MB）不在本仓库，按上面步骤重跑 23 分钟即可。
-- `fb_base/`（223.6 MB）同样未入库，用 `make_fb_base.py` 约 1 分钟重建。
+- The trained weights (223.6 MB) are not in this repository; rerunning the steps above takes 23 minutes.
+- `fb_base/` (223.6 MB) is likewise not committed; `make_fb_base.py` rebuilds it in about a minute.

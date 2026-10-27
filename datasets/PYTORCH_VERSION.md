@@ -1,95 +1,97 @@
-# PyTorch 版本选择（训练/开发环境）
+# PyTorch version selection (training / development environment)
 
-针对本机：Windows + **GTX 1650（Turing，算力 sm_75，4GB 显存）**，驱动 466.92 → 支持最高 CUDA 11.3。
+For this machine: Windows + **GTX 1650 (Turing, compute capability sm_75, 4 GB VRAM)**, driver 466.92 → supports CUDA up to 11.3.
 
-## 结论
+## Conclusion
 
 ```
 torch 2.7.1+cu118   +   transformers 4.57.x   +   Python 3.10 / 3.11
 ```
 
 ```bash
-# 新建隔离环境（3.11 最稳；本机已有 3.13 也行，见下文）
+# Create an isolated environment (3.11 is the most reliable; 3.13 already on this machine also works, see below)
 py -3.11 -m venv .venv
 .venv\Scripts\activate
 
-# 关键：必须用 cu118 轮子，cu121/cu124/cu126 在驱动 466.92 上装得上但无法使用 GPU
+# Key point: you must use the cu118 wheels. cu121/cu124/cu126 install fine on driver 466.92 but cannot use the GPU
 pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cu118
 
-# Laya 依赖（走国内源）
+# Laya dependencies (via a domestic mirror)
 pip install transformers>=4.48 safetensors huggingface_hub -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# 验证
+# Verify
 python -c "import torch;print(torch.__version__, torch.version.cuda, torch.cuda.is_available(), torch.cuda.get_device_capability())"
-# 期望：2.7.1+cu118 11.8 True (7, 5)
+# Expected: 2.7.1+cu118 11.8 True (7, 5)
 ```
 
-## 为什么是 2.7.1
+## Why 2.7.1
 
-| 约束 | 说明 |
+| Constraint | Explanation |
 | --- | --- |
-| Laya 声明 `torch>=2.0.0` | 只要 2.0 以上，**下限没有约束力**，坑在别处 |
-| 驱动 466.92 = CUDA 11.3 | 只能用 **cu118** 及更早的轮子；cu121/cu124/cu126 编译目标高于驱动上限，会报 CUDA driver version is insufficient |
-| cu118 已停更 | 官方 cu118 索引**最后一个版本就是 2.7.1**（2.8 起只发 cu126/cu128/cu129），所以 2.7.1 是这条路上的天花板 |
-| Python 支持 | 2.7.1+cu118 有 cp39/310/311/312/313 全套 Win 轮子，本机 3.13 也能装 |
+| Laya declares `torch>=2.0.0` | Anything from 2.0 up; **the lower bound is not the binding constraint**, the pitfall lies elsewhere |
+| Driver 466.92 = CUDA 11.3 | Only **cu118** or earlier wheels work; cu121/cu124/cu126 are built against a higher target than the driver allows and fail with "CUDA driver version is insufficient" |
+| cu118 is end-of-life | **The last version on the official cu118 index is 2.7.1** (2.8 onward only ships cu126/cu128/cu129), so 2.7.1 is the ceiling on this path |
+| Python support | 2.7.1+cu118 ships the full cp39/310/311/312/313 Windows wheel set, so 3.13 on this machine also installs |
 
-实测官方索引确认：
+Verified against the official indexes:
 
-- `https://download.pytorch.org/whl/cu118/torch/` → 最高 `2.7.1`
-- `https://download.pytorch.org/whl/cu121/torch/` → 最高 `2.5.1`（且本机驱动用不了）
+- `https://download.pytorch.org/whl/cu118/torch/` → highest is `2.7.1`
+- `https://download.pytorch.org/whl/cu121/torch/` → highest is `2.5.1` (and this machine's driver cannot use it)
 
-## transformers 版本
+## transformers version
 
-**必须 ≥ 4.48.0**：低于此版本不支持 ModernBERT 架构，模型加载会直接失败。Laya 的
-`pyproject.toml` 也是写 `transformers>=4.48.0`。
+**Must be ≥ 4.48.0**: earlier versions lack ModernBERT support and model loading fails outright. Laya's
+`pyproject.toml` also pins `transformers>=4.48.0`.
 
-另外 **transformers ≥ 5.0 会要求 `torch>=2.6`**，与本方案兼容；但 `option_layout="parallel"`
-训练（需要 transformers>=5）只在 eager 后端可用，本机没必要开。**建议锁 4.5x 系列**：
+Note that **transformers ≥ 5.0 requires `torch>=2.6`**, which is compatible with this setup; but
+`option_layout="parallel"` training (which needs transformers >= 5) only works on the eager backend and
+there is no reason to enable it here. **Pin the 4.5x series**:
 
 ```bash
 pip install "transformers>=4.48,<5"
 ```
 
-## 一个必须知道的性能陷阱（GTX 1650 专属）
+## A performance trap you must know (GTX 1650 specific)
 
-ModernBERT 隐藏维度是 1024，注意力 softmax 的 `dim_size = 1024`。查 PyTorch 源码
-`aten/src/ATen/native/cuda/SoftMax.cu` 的 forward 分支：
+ModernBERT's hidden dimension is 1024, so the attention softmax has `dim_size = 1024`. Looking at PyTorch's
+`aten/src/ATen/native/cuda/SoftMax.cu`, forward branch:
 
 ```cuda
 if (dim_size <= 2048 && dim_size*sizeof(scalar_t) <= 8192) {
-    dispatch_softmax_forward<...>();          // sub-warp / 128 线程 快路径（C10_WARP_SIZE=16 时每 lane 处理 2 个，
-} else {                                      // dim_size=1024 恰好落在 <=2048 内）
-    ... ILP / 512 线程通用路径 ...
+    dispatch_softmax_forward<...>();          // sub-warp / 128-thread fast path (with C10_WARP_SIZE=16 each lane handles 2,
+} else {                                      // dim_size=1024 lands just inside <=2048)
+    ... ILP / 512-thread general path ...
 }
 ```
 
-而 `at::cuda::warp_size()` 在 sm_5x–7x 上取 **32**，此时 `dim_size(1024) <= warp_size^2(1024)`
-成立的通用路径要求**每 lane 处理 ≥2 元素**，1024 元素只能给 32 lane 各 1 个 →
-**回落为 32 线程的慢 kernel**。Turing（sm_75）正是最典型的受害架构。
+But `at::cuda::warp_size()` is **32** on sm_5x–7x, and at that point the general path's condition
+`dim_size(1024) <= warp_size^2(1024)` requires **at least 2 elements per lane** — yet 1024 elements can only
+give each of 32 lanes one element → **it falls back to a 32-thread slow kernel**. Turing (sm_75) is the most
+typical victim architecture.
 
-结果：GTX 1650 上每条样本的 attention 开销比理论值差一个量级，**bf16 也救不了**
-（瓶颈是线程数不是带宽）。所以：
+Result: on a GTX 1650 the per-sample attention cost is an order of magnitude worse than theory, and **bf16
+does not help** (the bottleneck is thread count, not bandwidth). Therefore:
 
-- 别指望在这张 4GB 卡上跑完 53k 样本的训练，显存和速度都不够
-- 本机只用来做 **`--dry-run` 校验数据、跑 `predict` 冒烟测试、小批量 debug**
-- 真正训练放到云端 GPU（T4/A10/4090 都是 sm_80+，warp=32 但 fp16 走
-  `dispatch_softmax_forward` 的 half 路径或 tensor core 分支，不受此限）
+- Do not expect to train on 53k samples with this 4 GB card; neither VRAM nor speed is sufficient
+- Use this machine only for **`--dry-run` data validation, `predict` smoke tests, and small-batch debugging**
+- Do the real training on a cloud GPU (T4/A10/4090 are all sm_80+, warp=32 but fp16 goes through
+  `dispatch_softmax_forward`'s half path or the tensor-core branch, so they are unaffected)
 
-如果只有这张卡且必须本地训练，实用做法是**把 `max_len` 压到 256 以内**、micro-batch 1 +
-grad-accum 拉大，并接受要比云端慢 10 倍以上。
+If this is the only card you have and you must train locally, the practical approach is to **cap `max_len` at
+256 or below**, use micro-batch 1 with a large grad-accum, and accept being 10× slower than the cloud.
 
-## 备选方案
+## Alternatives
 
-| 场景 | 选择 |
+| Scenario | Choice |
 | --- | --- |
-| 本机 4GB 卡，只想 debug | `torch 2.7.1+cu118` + `max_len≤256` |
-| 本机没有可用 GPU，纯 CPU 校验数据 | `pip install torch --index-url https://download.pytorch.org/whl/cpu`（版本随意，2.7.1 即可） |
-| 云端训练（推荐） | `torch 2.7.1+cu126` 或 `2.8.x+cu128`，配 A10/4090；T4 用 cu118 也一样 |
-| 升级驱动后 | 驱动 ≥ 525 可上 cu118/cu121 全线；≥ 550 可上 cu126。**即便如此也别在本机训**，4GB 显存是硬伤 |
+| 4 GB card locally, only debugging | `torch 2.7.1+cu118` + `max_len<=256` |
+| No usable GPU locally, pure CPU data validation | `pip install torch --index-url https://download.pytorch.org/whl/cpu` (any version; 2.7.1 is fine) |
+| Cloud training (recommended) | `torch 2.7.1+cu126` or `2.8.x+cu128` with an A10/4090; cu118 works for T4 too |
+| After a driver upgrade | Driver ≥ 525 unlocks the whole cu118/cu121 line; ≥ 550 unlocks cu126. **Even so, do not train on this machine** — 4 GB of VRAM is the hard limit |
 
-## 不要做的事
+## What not to do
 
-- ❌ `pip install torch`（默认源默认拉 cu12x 版本，且会装到全局）
-- ❌ 装 `torch 2.8+` 后再找 cu118 轮子 —— 2.8 起没有 cu118 构建
-- ❌ 装 `tilelang`（`laya[fast]`）—— 需要 sm_80+，GTX 1650 不支持
-- ❌ 用 `laya[onnx]` 配 torch<2.3（NumPy 2 会与 torch 1.x ABI 冲突，官方已在 pyproject 注释里写明）
+- ❌ `pip install torch` (the default source pulls cu12x builds, and it installs globally)
+- ❌ Installing `torch 2.8+` and then hunting for cu118 wheels — there is no cu118 build from 2.8 onward
+- ❌ Installing `tilelang` (`laya[fast]`) — it needs sm_80+; the GTX 1650 does not support it
+- ❌ Pairing `laya[onnx]` with torch<2.3 (NumPy 2 conflicts with the torch 1.x ABI, as the official pyproject comment already states)

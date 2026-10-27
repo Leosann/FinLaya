@@ -1,69 +1,69 @@
-# 中文金融情感分析数据集（CFSC-ABSA / FinFE / FinNSP）
+# Chinese financial sentiment datasets (CFSC-ABSA / FinFE / FinNSP)
 
-下载时间：2026-10-26　总计 8 个文件，24,420,089 字节（约 24.42 MB）
+Downloaded 2026-10-26. 8 files in total, 24,420,089 bytes (about 24.42 MB).
 
-## 一、目录结构
+## 1. Layout
 
 ```
 datasets/
 ├── CFSC-ABSA/
-│   ├── train.txt        14,900,480 B (14.90 MB)  33,184 条
-│   └── test.txt          3,724,954 B ( 3.72 MB)   8,312 条
+│   ├── train.txt        14,900,480 B (14.90 MB)  33,184 rows
+│   └── test.txt          3,724,954 B ( 3.72 MB)   8,312 rows
 ├── FinFE/
-│   ├── train_list.json   1,085,511 B ( 1.09 MB)  16,157 条
-│   ├── eval_list.json      135,818 B ( 0.14 MB)   2,020 条
-│   └── problem_list.json   173,232 B ( 0.17 MB)   2,020 条（无标签，测试输入）
+│   ├── train_list.json   1,085,511 B ( 1.09 MB)  16,157 rows
+│   ├── eval_list.json      135,818 B ( 0.14 MB)   2,020 rows
+│   └── problem_list.json   173,232 B ( 0.17 MB)   2,020 rows (unlabeled test input)
 └── FinNSP/
-    ├── train_list.json   3,481,746 B ( 3.48 MB)   4,000 条
-    ├── eval_list.json      458,944 B ( 0.46 MB)     500 条
-    └── problem_list.json   459,404 B ( 0.46 MB)     500 条（无标签，测试输入）
+    ├── train_list.json   3,481,746 B ( 3.48 MB)   4,000 rows
+    ├── eval_list.json      458,944 B ( 0.46 MB)     500 rows
+    └── problem_list.json   459,404 B ( 0.46 MB)     500 rows (unlabeled test input)
 ```
 
-## 二、来源
+## 2. Sources
 
-| 数据集       | 仓库                                                                       | 原始路径                      |
+| Dataset | Repository | Original path |
 | --------- | ------------------------------------------------------------------------ | ------------------------- |
-| CFSC-ABSA | <https://github.com/Ya-dongLi/CFSC>                                      | `CFSC-ABSA/json格式/`       |
-| FinFE     | <https://github.com/supersymmetry-technologies/BBT-FinCUGE-Applications> | `FinCUGE_Publish/finfe/`  |
-| FinNSP    | 同上                                                                       | `FinCUGE_Publish/finnsp/` |
+| CFSC-ABSA | <https://github.com/Ya-dongLi/CFSC> | `CFSC-ABSA/json/` |
+| FinFE | <https://github.com/supersymmetry-technologies/BBT-FinCUGE-Applications> | `FinCUGE_Publish/finfe/` |
+| FinNSP | Same as above | `FinCUGE_Publish/finnsp/` |
 
-说明：本机到 `raw.githubusercontent.com` 直连被阻断，实际经镜像 `https://ghproxy.net/https://raw.githubusercontent.com/...` 下载，文件字节数与仓库 API 返回的 size 完全一致。
+Note: direct access to `raw.githubusercontent.com` is blocked from this machine, so the files were actually fetched through the mirror `https://ghproxy.net/https://raw.githubusercontent.com/...`. Byte counts match the sizes returned by the repository API exactly.
 
-## 三、数据格式
+## 3. Data format
 
-### CFSC-ABSA（ABSA，方面级情感分析）
+### CFSC-ABSA (ABSA, aspect-based sentiment analysis)
 
-`train.txt` / `test.txt` 虽为 .txt 后缀，内容是**标准 JSON 数组**（UTF-8），需 `json.load` 读取。
+`train.txt` / `test.txt` have a `.txt` extension but the contents are a **standard JSON array** (UTF-8), so read them with `json.load`.
 
 ```json
-[{"sentence": "...", "Level 1 aspect": "Economy", "term": "印度卢比",
+[{"sentence": "...", "Level 1 aspect": "Economy", "term": "<aspect term>",
   "polarity": "negative", "from": 5, "to": 9}]
 ```
 
-- `sentence` 语句文本；`Level 1 aspect` ∈ {Corporate, Stock, Market, Economy}
-- `term` 方面词；`from`/`to` 方面词在句中的起止位置；`polarity` ∈ {positive, neutral, negative}
-- 标签分布：训练集 positive 20,385 / neutral 4,228 / negative 8,571；  
-  测试集 positive 5,134 / neutral 1,032 / negative 2,146
-- 训练+测试 = 41,496 条，与论文口径一致（一个方面词算一条样本）
+- `sentence` is the text; `Level 1 aspect` ∈ {Corporate, Stock, Market, Economy}
+- `term` is the aspect term; `from`/`to` are its start and end offsets in the sentence; `polarity` ∈ {positive, neutral, negative}
+- Label distribution: training positive 20,385 / neutral 4,228 / negative 8,571;
+  test positive 5,134 / neutral 1,032 / negative 2,146
+- Train + test = 41,496 rows, matching the paper's protocol (one aspect term counts as one sample)
 
-### FinFE（金融社交媒体情绪分类，三分类）
+### FinFE (financial social-media sentiment, 3-way classification)
 
-- `train_list.json`、`eval_list.json`：`[["文本", 标签], ...]`，标签 `0`=消极、`1`=中性、`2`=积极
-- 标签分布：train 0:4,690 / 1:4,143 / 2:7,324；eval 0:574 / 1:560 / 2:886
-- `problem_list.json`：`[{"id": 0, "input": "文本"}, ...]`，仅输入，供预测/提交用
+- `train_list.json`, `eval_list.json`: `[["text", label], ...]`, where label `0`=negative, `1`=neutral, `2`=positive
+- Label distribution: train 0:4,690 / 1:4,143 / 2:7,324; eval 0:574 / 1:560 / 2:886
+- `problem_list.json`: `[{"id": 0, "input": "text"}, ...]`, input only, for prediction/submission
 
-### FinNSP（负面消息主体判定）
+### FinNSP (identifying the subject of negative news)
 
-- `train_list.json`、`eval_list.json`：每条为 6 元素列表，典型结构  
-  `[id, 无关/空字段, 正文, 实体1, 实体2, 标签]`（标签形如「是，实体名」/「否」）
-- `problem_list.json`：`[{"id": 0, "input": [正文, 实体...]}, ...]`，仅输入
-- 数量：train 4,000 / eval 500 / test 500
+- `train_list.json`, `eval_list.json`: each row is a 6-element list, typically
+  `[id, unused/empty field, body, entity1, entity2, label]` (label looks like "yes, &lt;entity name&gt;" / "no")
+- `problem_list.json`: `[{"id": 0, "input": [body, entity...]}, ...]`, input only
+- Counts: train 4,000 / eval 500 / test 500
 
-> 注意：BBT-FinCUGE 的 README 写的是 FinFE 8000/1000/1000、FinNSP 4800/600/600，  
-> 但仓库里实际发布的文件是上表数量（FinFE 16,157/2,020、FinNSP 4,000/500/500）。  
-> 以实际文件为准。
+> Note: the BBT-FinCUGE README states FinFE 8000/1000/1000 and FinNSP 4800/600/600,
+> but the files actually published in the repository have the counts above (FinFE 16,157/2,020, FinNSP 4,000/500/500).
+> The actual files are authoritative.
 
-## 四、SHA256
+## 4. SHA256
 
 ```
 1e86047e28fe0c542da149cebbcc63f087eed0e3d6acf4435ca56ea8e238ebb0  CFSC-ABSA/train.txt
@@ -76,8 +76,8 @@ f5b8bc10b49286a6b28d16fe24ccc30e6e46bfa90b0e5575033cfed0a0944edd  FinFE/problem_
 40aa03e60e61363ff0f8314fb871ebb67a594c82f406e8317ee17b0721575e9b  FinNSP/problem_list.json
 ```
 
-## 五、引用
+## 5. Citation
 
-- CFSC：Li Y. et al. *CFSC* (Chinese Financial Sentiment Corpus)，<https://github.com/Ya-dongLi/CFSC>
-- FinFE / FinNSP：Lu D. et al. *BBT-Fin: Comprehensive Construction of Chinese Financial Domain  
-  Pre-trained Language Model, Corpus and Benchmark*, arXiv:2302.09432（CFLEB 基准）
+- CFSC: Li Y. et al. *CFSC* (Chinese Financial Sentiment Corpus), <https://github.com/Ya-dongLi/CFSC>
+- FinFE / FinNSP: Lu D. et al. *BBT-Fin: Comprehensive Construction of Chinese Financial Domain
+  Pre-trained Language Model, Corpus and Benchmark*, arXiv:2302.09432 (the CFLEB benchmark)

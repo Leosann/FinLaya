@@ -1,26 +1,26 @@
-# HuggingFace 上传指南
+# Hugging Face upload guide
 
-仓库已发布：**https://huggingface.co/zhanghanshuo/FinLaya**
+The model repo is live at **https://huggingface.co/zhanghanshuo/FinLaya**
 
-> **状态（2026-10-27）**：9 个文件（235 MB）已上传，但**落在了 `hf-ready/` 子目录里**，仓库根只有 28 字节的占位 README。因此模型卡不渲染、`huggingface-cli download` 拿到的也不是 laya 布局。修复步骤见下方「修复当前仓库」。
+> **Status (2026-10-27)**: all 9 files (235 MB) are uploaded, but they landed **inside an `hf-ready/` subfolder**. The repo root only holds a 28-byte placeholder README, so the model card does not render and `huggingface-cli download` does not produce a valid Laya layout. See "Fixing the current repo" below.
 
-本机无法访问 `huggingface.co`（代理对 `CONNECT` 返回 502），所以上传要你在浏览器或能联网的环境里做。**文件已经准备好，就在本地。**
+This machine cannot reach `huggingface.co` (the proxy answers `CONNECT` with 502), so the upload has to happen from a browser or a machine with working network access. **The files are already prepared locally.**
 
-## 文件在哪
+## Where the files are
 
 ```
 D:\WorkBuddyAIWorkhome\2026-10-24-19-45-48\weights\hf-ready\
 ```
 
-9 个文件，合计 224.2 MB：
+9 files, 224.2 MB in total:
 
 ```
 hf-ready/
-├─ README.md                          模型卡（带 YAML frontmatter）
-├─ model.safetensors                 223.64 MB  235 个张量，全 F16，117.24M 参数
-├─ rl_agent_config.json                encoder / max_len / 温度 / 弃权阈值
-├─ questions.json                      4 个 qid 的题面定义
-├─ encoder/config.json                 BertConfig（hidden 768 / 12 层 / vocab 21128）
+├─ README.md                          model card (with YAML frontmatter)
+├─ model.safetensors                 223.64 MB  235 tensors, all F16, 117.24M parameters
+├─ rl_agent_config.json               encoder / max_len / temperature / abstain threshold
+├─ questions.json                     task definitions for the 4 qids
+├─ encoder/config.json                BertConfig (hidden 768 / 12 layers / vocab 21128)
 └─ tokenizer/
    ├─ tokenizer.json
    ├─ tokenizer_config.json
@@ -28,86 +28,86 @@ hf-ready/
    └─ vocab.txt
 ```
 
-校验值：`model.safetensors` 的 SHA256 应为
+Checksum — the SHA256 of `model.safetensors` should be
 
 ```
 745cb939f9311d73a3417b41db8b893dd5f9e9a2afeb25473efc547e00da08d3
 ```
 
-> 目录里是**硬链接**，不额外占磁盘。改动其中一份会影响另一份，但只读上传没有影响。
+> The directory contents are **hard links** and take no extra disk space. Editing one copy affects the other, which is harmless for a read-only upload.
 
 ---
 
-## 修复当前仓库（在你已上传的基础上）
+## Fixing the current repo (keeping what you already uploaded)
 
-三个办法，推荐第一个。
+Three options. The first is recommended.
 
-### 修复 1：网页移动文件（最省事，不重传 235 MB）
+### Option 1: move the files in the web UI (cheapest — no 235 MB re-upload)
 
-1. 打开 https://huggingface.co/zhanghanshuo/FinLaya/tree/main/hf-ready
-2. 勾选全部 5 个条目（`README.md`、`model.safetensors`、`rl_agent_config.json`、`questions.json`、`encoder/`、`tokenizer/`）
-3. 点 **Move**（若没有 Move，用 **Edit → Move file** 逐个移动）→ 目标填 `/`（仓库根）
-4. 移完后回到根目录，删除空的 `hf-ready/` 目录
-5. 回到 **Model card** 标签，确认显示的是 FinBERT-Laya 的中英内容而不是空白
+1. Open https://huggingface.co/zhanghanshuo/FinLaya/tree/main/hf-ready
+2. Select all five entries (`README.md`, `model.safetensors`, `rl_agent_config.json`, `questions.json`, `encoder/`, `tokenizer/`)
+3. Click **Move** (if there is no Move button, use **Edit → Move file** on each entry) and set the target to `/` (repo root)
+4. Go back to the root, then delete the now-empty `hf-ready/` folder
+5. Open the **Model card** tab and confirm it shows the FinBERT-Laya content instead of a blank page
 
-### 修复 2：用 `hf` 命令重新上传到根目录
+### Option 2: re-upload to the root with the `hf` CLI
 
 ```powershell
 pip install -U huggingface_hub
-hf auth login          # 或 $env:HF_TOKEN = "hf_xxxxxxxxxxxx"
+hf auth login          # or: $env:HF_TOKEN = "hf_xxxxxxxxxxxx"
 
-# 注意最后那个 "." —— 它表示「传到仓库根」
+# Note the trailing "." — it means "upload to the repo root"
 hf upload zhanghanshuo/FinLaya "D:\WorkBuddyAIWorkhome\2026-10-24-19-45-48\weights\hf-ready" .
 ```
 
-**这一步是你上次漏掉的**：`hf upload <repo> <local> <path_in_repo>` 的第三个参数缺省时，`hf` 会把本地目录名当作远程子目录，于是全部落到 `hf-ready/` 下。加上 `.` 才会平铺到根。
+**This is the argument that was missing last time**: in `hf upload <repo> <local> <path_in_repo>`, an omitted third argument makes `hf` use the local folder name as the remote subfolder, so everything ends up under `hf-ready/`. Only an explicit `.` flattens the files into the root.
 
-传完后删掉根目录下的 `hf-ready/`（网页上 Delete 即可），避免重复占 235 MB。
+Afterwards delete the `hf-ready/` folder at the root (via the web UI) so you are not paying for 235 MB twice.
 
-### 修复 3：用脚本（幂等，推荐长期用）
+### Option 3: use the script (idempotent, best for repeat use)
 
 ```powershell
 $env:HF_TOKEN = "hf_xxxxxxxxxxxx"
 python weights/upload_to_hf.py --repo zhanghanshuo/FinLaya
 ```
 
-脚本内部用了 `upload_folder(..., path_in_repo="")`，不会多套一层。加 `--dry-run` 可先看要传什么。因为已存在同名文件，重复执行只会覆盖，不会产生副本。
+The script calls `upload_folder(..., path_in_repo="")`, so it never nests an extra level. Add `--dry-run` to preview what would be uploaded. Because the files already exist under the same names, re-running only overwrites — it does not create duplicates.
 
 ---
 
-## 方法 A：网页拖拽（从零建仓时最省事）
+## Method A: drag and drop in the web UI (easiest when creating a repo from scratch)
 
-1. 打开 https://huggingface.co/new
-2. **Owner** 选 `zhanghanshuo`，**Model name** 填 `FinLaya`，可见性选 Public，点 **Create model**
-3. 进入仓库页 → **Files** 标签 → **Add file** → **Upload files**
-4. 把 `hf-ready` 目录里的**内容**（不是目录本身）全选拖进上传区
-   - 拖整个文件夹也行，浏览器会保留 `encoder/` 和 `tokenizer/` 的子目录结构
-   - 223 MB 单文件会走 LFS，上传过程中不要关页面
-5. 下方 Commit message 随便填，点 **Commit changes**
+1. Open https://huggingface.co/new
+2. Set **Owner** to `zhanghanshuo`, **Model name** to `FinLaya`, pick Public visibility, then click **Create model**
+3. Open the repo → **Files** tab → **Add file** → **Upload files**
+4. Select the **contents** of the `hf-ready` folder (not the folder itself) and drag them into the upload area
+   - Dragging the whole folder also works — the browser preserves the `encoder/` and `tokenizer/` subfolders
+   - The 223 MB file goes through LFS, so do not close the page while it uploads
+5. Type any commit message and click **Commit changes**
 
-> 关键点是**别把 `hf-ready` 这一层目录本身拖进去**，否则就是你上次的结果。
+> The important part is **not to drag the `hf-ready` folder level itself** — that is exactly what happened last time.
 
-上传完刷新页面，根目录应该能看到 9 个文件，且 `model.safetensors` 旁有 `LFS` 标记。
+After refreshing, the root should show 9 files, with an `LFS` badge next to `model.safetensors`.
 
 ---
 
-## 方法 B：命令行
+## Method B: command line
 
 ```powershell
 pip install -U huggingface_hub
 hf auth login
-# 或 $env:HF_TOKEN = "hf_xxxxxxxxxxxx"
+# or: $env:HF_TOKEN = "hf_xxxxxxxxxxxx"
 
 hf upload zhanghanshuo/FinLaya "D:\WorkBuddyAIWorkhome\2026-10-24-19-45-48\weights\hf-ready" .
 ```
 
-Token 在 https://huggingface.co/settings/tokens 创建，类型选 **Write**。
+Create the token at https://huggingface.co/settings/tokens and choose the **Write** type.
 
-最后那个 `.` 表示传到仓库根目录，**别漏掉**。
+The trailing `.` means "upload to the repo root" — **do not drop it**.
 
 ---
 
-## 方法 C：git push（需要 git-lfs）
+## Method C: git push (requires git-lfs)
 
 ```bash
 git lfs install
@@ -120,28 +120,28 @@ git commit -m "Upload FinBERT-Laya 117M"
 git push
 ```
 
-只在方法 A/B 都不顺时用。
+Use this only if methods A and B both fail.
 
 ---
 
-## 上传后自查
+## Post-upload checklist
 
-打开 `https://huggingface.co/zhanghanshuo/FinLaya`，确认：
+Open `https://huggingface.co/zhanghanshuo/FinLaya` and confirm:
 
-- [ ] **根目录 9 个文件**，`model.safetensors` 显示 `223.6 MB` 且带 LFS 标记
-- [ ] **没有 `hf-ready/` 子目录**
-- [ ] **模型卡正常渲染** —— 顶部显示「FinBERT-Laya (117M)」，不是空白，也不是一堆 YAML 原文
-- [ ] **子目录结构正确** —— 有 `encoder/config.json` 和 `tokenizer/`，不是被拍平
-- [ ] **右侧信息栏** 显示参数量约 117M（HF 从 safetensors header 自动读）
-- [ ] **License 显示 MIT**（模型卡 frontmatter 里是 `license: mit`；若仍显示 apache-2.0，说明根目录的 README 还没替换）
+- [ ] **9 files at the root**, with `model.safetensors` showing `223.6 MB` and an LFS badge
+- [ ] **No `hf-ready/` subfolder**
+- [ ] **The model card renders** — the header reads "FinBERT-Laya (117M)", not a blank page and not raw YAML
+- [ ] **Subfolder structure is intact** — `encoder/config.json` and `tokenizer/` exist and were not flattened
+- [ ] **The right-hand info panel** reports roughly 117M parameters (HF reads this from the safetensors header)
+- [ ] **License shows MIT** (the model card frontmatter has `license: mit`; if it still says apache-2.0, the root README has not been replaced yet)
 
-### 关于「模型页不显示 transformers 代码片段」
+### Why the model page shows no transformers snippet
 
-这是**预期行为**，不是出错。HF 会在仓库根目录找 `config.json` + `pytorch_model.bin`/`model.safetensors` 来生成 `AutoModel.from_pretrained(...)` 示例。本项目是 Laya 的 checkpoint 布局（`encoder/config.json` 在子目录、权重键带 `encoder.` 前缀），所以不适用 transformers 的自动加载。
+This is **expected**, not an error. HF looks for `config.json` plus `pytorch_model.bin`/`model.safetensors` at the repo root to generate the `AutoModel.from_pretrained(...)` example. This project uses the Laya checkpoint layout (`encoder/config.json` lives in a subfolder and the weight keys carry an `encoder.` prefix), so transformers auto-loading does not apply.
 
-**不要**为了让它显示而往根目录加 `config.json` —— 那会让 HF 尝试用 transformers 加载，然后因为权重键前缀对不上而报错，反而更糟。
+**Do not** add a `config.json` at the root just to make the snippet appear — that would make HF try to load the model with transformers, which then fails because the weight key prefixes do not match. That is strictly worse.
 
-正确的加载方式是 Laya 的 API：
+The correct way to load it is the Laya API:
 
 ```python
 import laya
@@ -149,22 +149,22 @@ router = laya.Router(device="cuda", preload=False)
 name = router.register("finbert-laya", "zhanghanshuo/FinLaya")
 ```
 
-`Router.register` 支持 Hub ID：`resolve_checkpoint_dir` 会 `snapshot_download` 那 4 类文件（`rl_agent_config.json` / `model.safetensors` / `tokenizer/*` / `encoder/*`），正好就是本目录的内容。
+`Router.register` accepts a Hub ID: `resolve_checkpoint_dir` runs `snapshot_download` for exactly those four kinds of files (`rl_agent_config.json` / `model.safetensors` / `tokenizer/*` / `encoder/*`), which is precisely what this directory contains.
 
 ---
 
-## 如果要在另一台电脑上传
+## Uploading from a different machine
 
-这台电脑上的文件没法直接给另一台机器。两个办法：
+Files on this machine cannot be handed to another one directly. Two options:
 
-1. **从 GitHub 拉**（推荐，不用拷 223 MB）
+1. **Pull from GitHub** (recommended — no need to copy 223 MB)
    ```bash
    git clone https://github.com/Leosann/FinLaya.git
    cd FinLaya/weights/finbert-laya
-   bash restore.sh          # 合并分片 + SHA256 校验
+   bash restore.sh          # merge the shards + verify SHA256
    ```
-   然后把 `weights/finbert-laya/` 里的 `model.safetensors`、`rl_agent_config.json`、`encoder/`、`tokenizer/` 和 `weights/hf-model-card.md`（改名为 `README.md`）一起传。`questions.json` 在 `FinLaya/configs/` 下。
+   Then upload `model.safetensors`, `rl_agent_config.json`, `encoder/` and `tokenizer/` from `weights/finbert-laya/`, plus `weights/hf-model-card.md` renamed to `README.md`. `questions.json` lives in `FinLaya/configs/`.
 
-2. **U 盘 / 网盘拷 `hf-ready` 整个目录**（224 MB）。
+2. **Copy the whole `hf-ready` directory** (224 MB) via a USB stick or cloud drive.
 
-无论哪种方式，上传后都应该跑一次 `restore.sh --check` 或比对 SHA256，确认文件没有在传输中损坏。
+Either way, run `restore.sh --check` or compare the SHA256 afterwards to confirm nothing was corrupted in transit.
