@@ -1,0 +1,45 @@
+{
+ "finbert": {
+  "n_params": 102269955,
+  "n_params_M": 102.269955,
+  "weights_mb": 390.1513252258301,
+  "dir_mb": 390.6775732040405,
+  "latency_p50_ms": 5.929112434387207,
+  "latency_p95_ms": 5.981683731079102,
+  "latency_mean_ms": 6.881316900253296,
+  "qps_batch1": 145.3210213241583,
+  "qps_batch32": 2857.6723904827804,
+  "peak_mem_mb_batch32": 486.26904296875,
+  "weight_dtype": "fp32"
+ },
+ "laya": {
+  "ckpt": "/data/laya-fin/ckpt",
+  "weights_mb": 614.0094032287598,
+  "dir_mb": 646.8404121398926,
+  "latency_p50_ms": 18.642663955688477,
+  "latency_p95_ms": 19.339799880981445,
+  "latency_mean_ms": 18.860533237457275,
+  "qps_batch1": 53.02077027249614,
+  "n_params": 321908998,
+  "n_params_M": 321.908998,
+  "weight_dtypes": {
+   "F16": 170
+  },
+  "peak_mem_mb": 1499.330078125
+ },
+ "fb_laya": {
+  "ckpt": "/data/laya-fin/fb_ckpt",
+  "weights_mb": 223.6377830505371,
+  "dir_mb": 224.1761875152588,
+  "latency_p50_ms": 8.662819862365723,
+  "latency_p95_ms": 8.92329216003418,
+  "latency_mean_ms": 8.851122856140137,
+  "qps_batch1": 112.98001578480941,
+  "n_params": 117236998,
+  "n_params_M": 117.236998,
+  "weight_dtypes": {
+   "F16": 235
+  },
+  "peak_mem_mb": 667.345703125
+ }
+}

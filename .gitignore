@@ -1,0 +1,54 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+
+# ---- 模型权重（体积大，按需从服务器取或重训）----
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+FinLaya/checkpoint_latest/
+FinBert/models/
+# 训练中途快照（与顶层 model.safetensors 同一份权重，别重复提交）
+checkpoint_latest/
+# FinBERT-Laya 的 base 与训练产物（各约 224 MB）
+fb_base/
+fb_ckpt/
+fb_ckpt_run1/
+
+# ---- 数据集（体积大，用 datasets/to_laya_format.py 重新生成）----
+datasets/CFSC-ABSA/
+datasets/FinFE/
+datasets/FinNSP/
+datasets/laya/*.jsonl
+
+# ---- tokenizer（33 MB，可从 HuggingFace 重新下载）----
+FinLaya/tokenizer/
+
+# ---- 缓存 ----
+hf_cache/
+.cache/
+
+# ---- 运行产物（日志与报告已在仓库内保留，这里只忽略临时文件）----
+*.tmp
+*.log.tmp
+run_*/
+tmp*/
+
+# ---- 编辑器 ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# ---- 工具目录（本地环境专用，不对外）----
+.workbuddy-ai/

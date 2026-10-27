@@ -1,0 +1,16 @@
+>>> bench laya
+{
+ "weights_mb": 1228.0188064575195,
+ "dir_mb": 1293.6808242797852,
+ "latency_p50_ms": 18.55647563934326,
+ "latency_p95_ms": 18.98360252380371,
+ "latency_mean_ms": 18.675310611724854,
+ "qps_batch1": 53.54663281328095,
+ "n_params": 321908998,
+ "n_params_M": 321.908998,
+ "weight_dtypes": {
+  "F16": 170
+ },
+ "peak_mem_mb": 1499.330078125
+}
+DEPLOY_DONE.

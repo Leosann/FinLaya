@@ -1,0 +1,65 @@
+{
+ "sentiment_social": {
+  "qid": "sentiment_social",
+  "n": 2020,
+  "classes": [
+   "negative",
+   "neutral",
+   "positive"
+  ],
+  "accuracy": 0.7797029702970297,
+  "macro_f1": 0.7689770973065281,
+  "weighted_f1": 0.7807802277588415,
+  "macro_f1_present": 0.7689770973065281,
+  "n_classes_present": 3,
+  "n_classes": 3,
+  "per_class": {
+   "negative": {
+    "precision": 0.7943262411347518,
+    "recall": 0.7804878048780488,
+    "f1": 0.7873462214411249,
+    "support": 574
+   },
+   "neutral": {
+    "precision": 0.6610169491525424,
+    "recall": 0.6964285714285714,
+    "f1": 0.6782608695652174,
+    "support": 560
+   },
+   "positive": {
+    "precision": 0.851039260969977,
+    "recall": 0.8318284424379232,
+    "f1": 0.841324200913242,
+    "support": 886
+   }
+  },
+  "confusion_matrix": [
+   [
+    448,
+    84,
+    42
+   ],
+   [
+    83,
+    390,
+    87
+   ],
+   [
+    33,
+    116,
+    737
+   ]
+  ],
+  "ece": 0.07386192349271826,
+  "brier": 0.351642645706735,
+  "nll": 0.6466772624848347,
+  "aurc": 0.11838521524281084,
+  "mean_confidence": 0.8516518124988063,
+  "selective_acc@50": 0.8950495049504951,
+  "selective_threshold@50": 0.8892110788921108,
+  "selective_acc@80": 0.8378712871287128,
+  "selective_threshold@80": 0.8451,
+  "selective_acc@90": 0.8135313531353136,
+  "selective_threshold@90": 0.7429
+ }
+}

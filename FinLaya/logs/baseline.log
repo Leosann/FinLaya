@@ -1,0 +1,44 @@
+
+======== BASE finfe_eval ========
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Fetching 5 files: 100%|██████████| 5/5 [00:00<00:00, 1368.99it/s]
+aurc               0.3226
+brier              0.2656
+choice_accuracy    0.5579
+cost_per_decision_p50_ms 15.6779
+cost_per_decision_p95_ms 18.8184
+ece                0.1848
+latency_p50_ms     15.6779
+latency_p95_ms     18.8184
+mean_confidence    0.7427
+selective_accuracy@50 0.6693
+selective_accuracy@80 0.6114
+
+======== BASE finnsp_eval ========
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Fetching 5 files: 100%|██████████| 5/5 [00:00<00:00, 1264.56it/s]
+aurc               0.3725
+brier              0.3534
+choice_accuracy    0.1351
+cost_per_decision_p50_ms 23.1942
+cost_per_decision_p95_ms 93.6528
+ece                0.3554
+latency_p50_ms     23.1942
+latency_p95_ms     93.6528
+mean_confidence    0.8438
+noul_accuracy      0.6800
+selective_accuracy@50 0.6368
+selective_accuracy@80 0.5543
+
+======== BASE cfsc_absa_test ========
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Fetching 5 files: 100%|██████████| 5/5 [00:00<00:00, 1303.96it/s]
+aurc               0.1943
+brier              0.2189
+choice_accuracy    0.6896
+cost_per_decision_p50_ms 19.5100
+cost_per_decision_p95_ms 80.7777
+ece                0.1508
+latency_p50_ms     19.5100
+latency_p95_ms     80.7777
+mean_confidence    0.8404
+selective_accuracy@50 0.8027
+selective_accuracy@80 0.7451
+BASELINE_DONE.

@@ -1,0 +1,84 @@
+[absa] train rows=33184 labels=3
+Error while downloading from https://cas-bridge.xethub.hf.co/xet-bridge-us/65c2130b55b6309e98b62125/c0341770475f882de188aaf7c2afccd40f7cc510edbcb3de920cdddbdad96971?Expires=1793019062&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYXMtYnJpZGdlLnhldGh1Yi5oZi5jby94ZXQtYnJpZGdlLXVzLzY1YzIxMzBiNTViNjMwOWU5OGI2MjEyNS9jMDM0MTc3MDQ3NWY4ODJkZTE4OGFhZjdjMmFmY2NkNDBmN2NjNTEwZWRiY2IzZGU5MjBjZGRkYmRhZDk2OTcxKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc5MzAxOTA2Mn19fV19&Signature=MEUCIQDjHaoR1R-aRlOwmZReBLbuDKWEmyCB4qrBS2BSwYTyPwIgGsC09p2yGq3CNrK%7EtiiEt-YzJGnQ8g4jWxJQ6lY%7EQBA_&Key-Pair-Id=K3EPXBYC3CKDRZ&xip=JsomvvNncvE&X-Xet-Cas-Uid=62171e3b6a99db28e0b3159d&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27model.safetensors%3B+filename%3D%22model.safetensors%22%3B&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=cas%2F20261026%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261026T115102Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=ff3864ca3fbc677b2a45f93d6c18a51fcef3a4d886e68467e4ed9a3e914b9963: HTTPSConnectionPool(host='cas-bridge.xethub.hf.co', port=443): Read timed out.
+Trying to resume download...
+/data/laya-fin/finbert_baseline.py:118: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler()
+/data/laya-fin/finbert_baseline.py:126: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(dtype=torch.float16):
+/data/miniconda/envs/finbert/lib/python3.11/site-packages/torch/optim/lr_scheduler.py:227: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
+  warnings.warn(
+  [absa] ep1 step 100 loss 2.7290
+  [absa] ep1 step 200 loss 1.6228
+  [absa] ep1 step 300 loss 1.2005
+  [absa] ep1 step 400 loss 0.9742
+  [absa] ep1 step 500 loss 0.8340
+  [absa] ep1 step 600 loss 0.7414
+  [absa] ep1 step 700 loss 0.6728
+  [absa] ep1 step 800 loss 0.6196
+  [absa] ep1 step 900 loss 0.5776
+  [absa] ep1 step 1000 loss 0.5452
+  [absa] epoch 1 mean loss 0.5335  (73s)
+  [absa] ep2 step 100 loss 0.2025
+  [absa] ep2 step 200 loss 0.2079
+  [absa] ep2 step 300 loss 0.2104
+  [absa] ep2 step 400 loss 0.2048
+  [absa] ep2 step 500 loss 0.2044
+  [absa] ep2 step 600 loss 0.2042
+  [absa] ep2 step 700 loss 0.2011
+  [absa] ep2 step 800 loss 0.1982
+  [absa] ep2 step 900 loss 0.1955
+  [absa] ep2 step 1000 loss 0.1954
+  [absa] epoch 2 mean loss 0.1950  (145s)
+  [absa] ep3 step 100 loss 0.1308
+  [absa] ep3 step 200 loss 0.1405
+  [absa] ep3 step 300 loss 0.1458
+  [absa] ep3 step 400 loss 0.1444
+  [absa] ep3 step 500 loss 0.1423
+  [absa] ep3 step 600 loss 0.1424
+  [absa] ep3 step 700 loss 0.1409
+  [absa] ep3 step 800 loss 0.1390
+  [absa] ep3 step 900 loss 0.1398
+  [absa] ep3 step 1000 loss 0.1373
+  [absa] epoch 3 mean loss 0.1371  (218s)
+[absa] saved -> /data/laya-fin/finbert/absa (218s)
+[finfe] train rows=16157 labels=3
+  [finfe] ep1 step 100 loss 1.9253
+  [finfe] ep1 step 200 loss 1.3521
+  [finfe] ep1 step 300 loss 1.1254
+  [finfe] ep1 step 400 loss 1.0047
+  [finfe] ep1 step 500 loss 0.9373
+  [finfe] epoch 1 mean loss 0.9341  (21s)
+  [finfe] ep2 step 100 loss 0.5320
+  [finfe] ep2 step 200 loss 0.5169
+  [finfe] ep2 step 300 loss 0.5099
+  [finfe] ep2 step 400 loss 0.5031
+  [finfe] ep2 step 500 loss 0.5017
+  [finfe] epoch 2 mean loss 0.5008  (41s)
+  [finfe] ep3 step 100 loss 0.3755
+  [finfe] ep3 step 200 loss 0.3633
+  [finfe] ep3 step 300 loss 0.3642
+  [finfe] ep3 step 400 loss 0.3640
+  [finfe] ep3 step 500 loss 0.3597
+  [finfe] epoch 3 mean loss 0.3593  (63s)
+[finfe] saved -> /data/laya-fin/finbert/finfe (63s)
+[nsp_has] train rows=4000 labels=2
+Some weights of BertForSequenceClassification were not initialized from the model checkpoint at yiyanghkust/finbert-tone-chinese and are newly initialized because the shapes did not match:
+- classifier.bias: found shape torch.Size([3]) in the checkpoint and torch.Size([2]) in the model instantiated
+- classifier.weight: found shape torch.Size([3, 768]) in the checkpoint and torch.Size([2, 768]) in the model instantiated
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+  [nsp_has] ep1 step 100 loss 0.2931
+  [nsp_has] epoch 1 mean loss 0.2584  (9s)
+  [nsp_has] ep2 step 100 loss 0.0889
+  [nsp_has] epoch 2 mean loss 0.0880  (18s)
+  [nsp_has] ep3 step 100 loss 0.0434
+  [nsp_has] epoch 3 mean loss 0.0429  (27s)
+[nsp_has] saved -> /data/laya-fin/finbert/nsp_has (28s)
+[nsp_subject] train rows=2221 labels=19
+Some weights of BertForSequenceClassification were not initialized from the model checkpoint at yiyanghkust/finbert-tone-chinese and are newly initialized because the shapes did not match:
+- classifier.bias: found shape torch.Size([3]) in the checkpoint and torch.Size([19]) in the model instantiated
+- classifier.weight: found shape torch.Size([3, 768]) in the checkpoint and torch.Size([19, 768]) in the model instantiated
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+  [nsp_subject] epoch 1 mean loss 1.4423  (5s)
+  [nsp_subject] epoch 2 mean loss 0.4029  (10s)
+  [nsp_subject] epoch 3 mean loss 0.2516  (15s)
+[nsp_subject] saved -> /data/laya-fin/finbert/nsp_subject (16s)

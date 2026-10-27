@@ -1,0 +1,44 @@
+
+======== FT finfe_eval ========
+[eval] registered 'fin-laya' -> /data/laya-fin/ckpt
+[eval] 2020 rows
+[eval] === finfe_eval.jsonl ===
+  choice_accuracy          0.7797
+  ece                      0.0739
+  brier                    0.1631
+  aurc                     0.1186
+  mean_confidence          0.8517
+  selective_accuracy@50    0.8960
+  selective_accuracy@80    0.8379
+  latency_p50_ms           22.1619
+  cost_per_decision_p50_ms 1.3854
+
+======== FT finnsp_eval ========
+[eval] registered 'fin-laya' -> /data/laya-fin/ckpt
+[eval] 500 rows
+[eval] === finnsp_eval.jsonl ===
+  choice_accuracy          0.9691
+  noul_accuracy            0.9500
+  ece                      0.0998
+  brier                    0.0503
+  aurc                     0.0160
+  mean_confidence          0.8686
+  selective_accuracy@50    0.9921
+  selective_accuracy@80    0.9671
+  latency_p50_ms           68.0270
+  cost_per_decision_p50_ms 19.0033
+
+======== FT cfsc_absa_test ========
+[eval] registered 'fin-laya' -> /data/laya-fin/ckpt
+[eval] 8312 rows
+[eval] === cfsc_absa_test.jsonl ===
+  choice_accuracy          0.9337
+  ece                      0.0638
+  brier                    0.0574
+  aurc                     0.0211
+  mean_confidence          0.8883
+  selective_accuracy@50    0.9860
+  selective_accuracy@80    0.9808
+  latency_p50_ms           74.7429
+  cost_per_decision_p50_ms 4.6714
+FT_EVAL_DONE.

@@ -1,0 +1,121 @@
+{
+  "eval_source": "/data/laya-fin/laya/finfe_eval.jsonl",
+  "eval_mode": "overlapping_eval",
+  "is_held_out": false,
+  "eval_items": 2020,
+  "note": "Evaluation set contains inputs that overlap training data (1090) and calibration data (7) (total 1097/2020 items); metrics do not reflect strictly independent held-out evaluation.",
+  "before": {
+    "items": 2020,
+    "loss": 1.147,
+    "accuracy": 0.5604,
+    "mean_confidence": 0.7425,
+    "ece": 0.1821,
+    "brier": 0.6107,
+    "brier_top1": 0.2659,
+    "by_type": {
+      "choice": {
+        "items": 2020,
+        "loss": 1.147,
+        "accuracy": 0.5604,
+        "mean_confidence": 0.7425,
+        "ece": 0.1821,
+        "brier": 0.6107,
+        "brier_top1": 0.2659
+      }
+    }
+  },
+  "after": {
+    "items": 2020,
+    "loss": 0.6462,
+    "accuracy": 0.7807,
+    "mean_confidence": 0.8513,
+    "ece": 0.0717,
+    "brier": 0.3513,
+    "brier_top1": 0.1629,
+    "by_type": {
+      "choice": {
+        "items": 2020,
+        "loss": 0.6462,
+        "accuracy": 0.7807,
+        "mean_confidence": 0.8513,
+        "ece": 0.0717,
+        "brier": 0.3513,
+        "brier_top1": 0.1629
+      }
+    }
+  },
+  "comparison": {
+    "delta_accuracy": 0.2203,
+    "delta_loss": -0.5008,
+    "delta_ece": -0.1104,
+    "delta_brier": -0.2594,
+    "delta_brier_top1": -0.103,
+    "delta_mean_confidence": 0.1088
+  },
+  "calibration": {
+    "choice": {
+      "items": 366,
+      "temperature": 1.4377573728561401,
+      "issues": [],
+      "accuracy": 0.8961748633879781,
+      "mean_confidence": 0.8784929763532806
+    },
+    "score": {
+      "items": 0,
+      "temperature": 1.0,
+      "issues": []
+    },
+    "noul": {
+      "items": 34,
+      "temperature": 1.458462119102478,
+      "issues": [
+        "fitted on only 34 calibration items"
+      ],
+      "accuracy": 0.9411764705882353,
+      "mean_confidence": 0.9187185723760539
+    }
+  },
+  "abstention_thresholds": {
+    "choice:3-5": 0.6217,
+    "noul:2": 0.6661,
+    "choice:11+": 0.7562
+  },
+  "training": {
+    "epochs": 4,
+    "micro_batch": 24,
+    "grad_accum": 3,
+    "encoder_lr": 2.5e-05,
+    "head_lr": 0.0001,
+    "min_lr": 1e-06,
+    "weight_decay": 0.01,
+    "grad_clip": 1.0,
+    "loss": "rlcd",
+    "rl_samples": 4,
+    "sigma_start": 0.4,
+    "sigma_end": 0.1,
+    "w_sph": 0.75,
+    "w_rps": 1.0,
+    "shuffle_options": [
+      "choice"
+    ],
+    "option_layout": null,
+    "freeze_encoder": false,
+    "calib_max": 400,
+    "calib_frac": 0.1,
+    "calib_seed": 20260922,
+    "seed": 0,
+    "max_len": null,
+    "head_max_len": null,
+    "amp": null,
+    "gradient_checkpointing": null,
+    "log_every": 100,
+    "label_smoothing": 0.05,
+    "text_column": "text",
+    "label_column": "label",
+    "question_id": "label",
+    "instructions": null,
+    "eval_data": "/data/laya-fin/laya/finfe_eval.jsonl",
+    "target_error": 0.1,
+    "min_abstain_n": 10
+  }
+}

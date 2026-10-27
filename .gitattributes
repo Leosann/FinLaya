@@ -1,0 +1,12 @@
+# 统一用 LF：脚本要在 Linux 服务器上直接跑，CRLF 会导致 `bash: $'\r': command not found`
+* text=auto eol=lf
+
+# 二进制文件不做换行转换
+*.safetensors binary
+*.bin binary
+*.pt binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.zip binary

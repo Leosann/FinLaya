@@ -1,0 +1,19 @@
+>>> bench finbert
+/data/laya-fin/deploy_metrics.py:67: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(dtype=torch.float16):
+/data/laya-fin/deploy_metrics.py:87: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(dtype=torch.float16):
+{
+ "n_params": 102269955,
+ "n_params_M": 102.269955,
+ "weights_mb": 390.1513252258301,
+ "dir_mb": 390.6775732040405,
+ "latency_p50_ms": 5.929112434387207,
+ "latency_p95_ms": 5.981683731079102,
+ "latency_mean_ms": 6.881316900253296,
+ "qps_batch1": 145.3210213241583,
+ "qps_batch32": 2857.6723904827804,
+ "peak_mem_mb_batch32": 486.26904296875,
+ "weight_dtype": "fp32"
+}
+DEPLOY_DONE.

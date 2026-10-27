@@ -1,0 +1,5 @@
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Fetching 5 files:  20%|██        | 1/5 [00:00<00:03,  1.15it/s]Fetching 5 files:  40%|████      | 2/5 [00:01<00:01,  1.79it/s]Fetching 5 files:  80%|████████  | 4/5 [00:03<00:00,  1.31it/s]Fetching 5 files:  80%|████████  | 4/5 [00:20<00:05,  5.00s/it]Fetching 5 files: 100%|██████████| 5/5 [00:45<00:00,  9.06s/it]Fetching 5 files: 100%|██████████| 5/5 [00:45<00:00,  9.06s/it]
+dry-run: eval 2020 rows read, 2020 valid items, skipped: {}
+dry-run: 53341 rows read, 55562 valid items, skipped: {}
+dry-run: optimizer budget: 55162 train item(s), effective batch up to 64 (micro_batch 8 x grad_accum 8), 3448 optimizer updates over 4 epoch(s)
+batch 8 x grad_accum 8), 3448 optimizer updates over 4 epoch(s)

@@ -1,0 +1,51 @@
+
+======== EVAL fb_finfe_eval ========
+[eval] registered 'fin-laya' -> fb_ckpt
+[eval] 2020 rows
+[eval] === finfe_eval.jsonl ===
+  choice_accuracy          0.7802
+  ece                      0.0485
+  brier                    0.1495
+  aurc                     0.0995
+  mean_confidence          0.8287
+  selective_accuracy@50    0.9130
+  selective_accuracy@80    0.8509
+  latency_p50_ms           14.4907
+  cost_per_decision_p50_ms 0.9062
+
+======== EVAL fb_finnsp_eval ========
+[eval] registered 'fin-laya' -> fb_ckpt
+[eval] 500 rows
+Token indices sequence length is longer than the specified maximum sequence length for this model (564 > 512). Running this sequence through the model will result in indexing errors
+[eval] === finnsp_eval.jsonl ===
+  choice_accuracy          0.9614
+  noul_accuracy            0.9520
+  ece                      0.1086
+  brier                    0.0442
+  aurc                     0.0134
+  mean_confidence          0.8589
+  selective_accuracy@50    0.9921
+  selective_accuracy@80    0.9803
+  latency_p50_ms           12.8837
+  cost_per_decision_p50_ms 4.8790
+
+======== EVAL fb_cfsc_absa_test ========
+[eval] registered 'fin-laya' -> fb_ckpt
+[eval] 8312 rows
+[eval] === cfsc_absa_test.jsonl ===
+  choice_accuracy          0.9301
+  ece                      0.0607
+  brier                    0.0545
+  aurc                     0.0119
+  mean_confidence          0.8902
+  selective_accuracy@50    0.9947
+  selective_accuracy@80    0.9818
+  latency_p50_ms           24.7697
+  cost_per_decision_p50_ms 1.5481
+
+======== 复算指标 ========
+  finfe_eval: 1311 B / strict 1301 B
+  finnsp_eval: 7846 B / strict 7888 B
+  cfsc_absa_test: 1292 B / strict 1314 B
+
+=== EVAL_DONE Tue Oct 27 11:31:32 CST 2026 ===
