@@ -1,0 +1,45 @@
+name: tests
+
+# 只跑单元测试（指标 + 数据转换 + 校验器），不训练、不评测、不需要 GPU 与模型权重。
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    name: pytest (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.11 是 README 里的目标版本；3.12 用来提前发现 numpy 2.x 之类的兼容问题
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Show versions
+        run: python -c "import sys, numpy; print(sys.version); print('numpy', numpy.__version__)"
+
+      - name: Run unit tests
+        run: python -m pytest -q
