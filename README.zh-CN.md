@@ -1,17 +1,18 @@
 <div align="center">
 
+<img src="assets/logo-200.png" alt="FinLaya" height="96" align="middle" />
+
 # FinLaya
 
 **中文金融情感决策模型 —— 用 1/3 的参数量，拿到同等精度**
 
 把情感分析重构为「在闭合选项集上的决策」，模型直接输出可校准的概率，并可按置信度决定是否弃权。
 
-[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-zhanghanshuo%2FFinLaya-FFD21E)](https://huggingface.co/zhanghanshuo/FinLaya)
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Models-FFD21E)](https://huggingface.co/zhanghanshuo/FinLaya)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.6.0-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Laya](https://img.shields.io/badge/Laya-0.4.15-6E56CF)](https://github.com/laya-ai/laya)
 [![License](https://img.shields.io/badge/License-MIT-2EA44F)](LICENSE)
-[![Models](https://img.shields.io/badge/Models-3%20released-blue)](weights/)
 
 [English](README.md) · [模型权重](https://huggingface.co/zhanghanshuo/FinLaya) · [关键结论](#关键结论) · [实验结果](#实验结果) · [快速开始](#快速开始) · [文档](#文档)
 

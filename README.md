@@ -1,17 +1,18 @@
 <div align="center">
 
+<img src="assets/logo-200.png" alt="FinLaya" height="96" align="middle" />
+
 # FinLaya
 
 **Chinese financial sentiment as a decision problem — a third of the parameters, the same accuracy**
 
 Sentiment analysis reformulated as decisions over a closed option set: the model emits calibrated probabilities and can abstain by confidence.
 
-[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-zhanghanshuo%2FFinLaya-FFD21E)](https://huggingface.co/zhanghanshuo/FinLaya)
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Models-FFD21E)](https://huggingface.co/zhanghanshuo/FinLaya)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.6.0-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Laya](https://img.shields.io/badge/Laya-0.4.15-6E56CF)](https://github.com/laya-ai/laya)
 [![License](https://img.shields.io/badge/License-MIT-2EA44F)](LICENSE)
-[![Models](https://img.shields.io/badge/Models-3%20released-blue)](weights/)
 
 [简体中文](README.zh-CN.md) · [Model weights](https://huggingface.co/zhanghanshuo/FinLaya) · [Key findings](#key-findings) · [Results](#results) · [Quick start](#quick-start) · [Docs](#docs)
 

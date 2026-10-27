@@ -55,3 +55,7 @@ tmp*/
 
 # ---- HF 上传用的组装目录（硬链接，不入库）----
 weights/hf-ready/
+
+# logo 中间产物（只保留 logo-200.png 与 logo-icon.png）
+assets/logo.png
+assets/logo-100.png
