@@ -117,9 +117,22 @@ def confusion_and_prf(y, pred, classes):
 
 
 def main():
+    if len(sys.argv) < 3:
+        print("用法: python laya_metrics.py <report.json> <dataset.jsonl> [--strict]")
+        return 2
     report_path, dataset = sys.argv[1], sys.argv[2]
     strict = "--strict" in sys.argv
+    if not os.path.exists(report_path):
+        print("找不到报告文件 %s" % report_path)
+        return 1
+    if not os.path.exists(dataset):
+        print("找不到数据集 %s" % dataset)
+        return 1
     rep = json.load(open(report_path, "r", encoding="utf-8"))
+    if "cases" not in rep:
+        # 最常见的原因是误把 *_metrics.json 当成 laya-evals 的原始报告传进来
+        print("%s 里没有 cases 字段 —— 需要 laya-evals 的原始报告，不是 *_metrics.json" % report_path)
+        return 1
     cases = rep["cases"]
     hs = report_hashes(dataset)
     if len(hs) != len(cases):
