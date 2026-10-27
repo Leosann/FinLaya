@@ -50,7 +50,15 @@ def check_expected(qid, qdef, val):
 
 
 def main():
+    # 目录缺失或为空时，下面会「校验了 0 行、0 错误」并返回 0，等于假通过；
+    # 而 README 把 exit 0 当作通过信号，所以这里必须先判空。
+    if not os.path.isdir(OUT):
+        print("找不到目录 %s —— 请先运行 python datasets/to_laya_format.py" % OUT)
+        return 1
     files = sorted(f for f in os.listdir(OUT) if f.endswith(".jsonl"))
+    if not files:
+        print("目录 %s 下没有 .jsonl 文件 —— 未校验任何样本，判定为失败" % OUT)
+        return 1
     total_rows = total_q = 0
     bad = []
     for fn in files:
@@ -81,6 +89,10 @@ def main():
                         check_expected(qid, qs[qid], val)
                 except AssertionError as e:
                     bad.append("%s:%d  %s" % (fn, ln, e))
+                except (KeyError, TypeError, ValueError, AttributeError) as e:
+                    # 坏 JSON 行（JSONDecodeError 是 ValueError）或字段类型不对时，
+                    # 只把这一行记为错误，不能让整个校验过程抛异常中断。
+                    bad.append("%s:%d  %s: %s" % (fn, ln, type(e).__name__, e))
         total_rows += rows
         total_q += n_q
         status = "OK " if not any(b.startswith(fn + ":") for b in bad) else "FAIL"
