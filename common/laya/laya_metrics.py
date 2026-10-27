@@ -75,7 +75,9 @@ def nll_s(probs, y):
 def aurc_s(probs, y):
     conf = probs.max(axis=1)
     ok = (probs.argmax(axis=1) == y).astype(float)
-    o = np.argsort(-conf)
+    # kind="stable"：报告里的概率是 4 位小数，置信度并列很常见（FinFE 2020 条里有 1051 条重复）。
+    # 默认的 quicksort 不稳定，并列顺序随 numpy 版本/平台变化，会让 aurc 和 selective_acc 不可复现。
+    o = np.argsort(-conf, kind="stable")
     ok = ok[o]
     cov = np.arange(1, len(ok) + 1) / len(ok)
     risk = 1.0 - np.cumsum(ok) / np.arange(1, len(ok) + 1)
@@ -87,7 +89,7 @@ def selective_at(probs, y, cov):
     conf = probs.max(axis=1)
     ok = (probs.argmax(axis=1) == y).astype(float)
     k = max(1, int(round(cov * len(conf))))
-    o = np.argsort(-conf)[:k]
+    o = np.argsort(-conf, kind="stable")[:k]   # 同上：并列时必须稳定排序，否则截断处的样本会漂移
     return float(ok[o].mean()), float(conf[o].min())
 
 
