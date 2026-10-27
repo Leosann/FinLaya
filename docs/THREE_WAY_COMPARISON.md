@@ -1,188 +1,188 @@
-# 三模型全指标对比
+# Three-model full-metric comparison
 
-> mmBERT-Laya（322M）· FinBERT-Laya（117M）· FinBERT 分类头（102M）
-> 同一批数据、同一套指标、同一张 RTX 4090。所有数字来自 `FinLaya/reports/`、`FinBertLaya/reports/`、`FinBert/reports/`、`common/reports/deploy_metrics.json`。
+> mmBERT-Laya (322M) · FinBERT-Laya (117M) · FinBERT classifier (102M)
+> Same data, same metrics, same RTX 4090. All numbers come from `FinLaya/reports/`, `FinBertLaya/reports/`, `FinBert/reports/`, and `common/reports/deploy_metrics.json`.
 
 ---
 
-## 0. 模型配置
+## 0. Model configuration
 
-| | mmBERT-Laya | FinBERT-Laya | FinBERT 分类头 |
+| | mmBERT-Laya | FinBERT-Laya | FinBERT classifier |
 |---|---|---|---|
-| encoder | ModernBERT-base（mmBERT） | BERT-base（FinBERT） | BERT-base（FinBERT） |
-| encoder 参数 | 307.0 M | 102.3 M | 102.3 M |
-| ├ embedding | **196.6 M**（vocab 256,000） | **16.2 M**（vocab 21,128） | 16.2 M |
-| └ transformer 主体 | 110.4 M（22 层 × 768） | 85.0 M（12 层 × 768） | 85.0 M |
-| 决策头 | 15.0 M（Laya 原生） | **15.0 M（完全相同）** | 4 个独立分类头（各约 0.6 M） |
-| **总参数** | **321.9 M** | **117.2 M** | 102.3 M |
-| 上下文长度 | 8,192 | 512 | 512 |
-| 权重 dtype | F16 | F16 | fp32（可转 F16） |
-| 输出 | 选项上的概率分布 + 弃权 | 选项上的概率分布 + 弃权 | softmax 概率 |
-| 覆盖任务 | **1 个模型覆盖 4 种题** | **1 个模型覆盖 4 种题** | **4 个任务需 4 个模型** |
-| 新增类别的成本 | 改题面 `criteria` | 改题面 `criteria` | 必须重训 |
+| Encoder | ModernBERT-base (mmBERT) | BERT-base (FinBERT) | BERT-base (FinBERT) |
+| Encoder parameters | 307.0 M | 102.3 M | 102.3 M |
+| ├ embedding | **196.6 M** (vocab 256,000) | **16.2 M** (vocab 21,128) | 16.2 M |
+| └ transformer body | 110.4 M (22 layers × 768) | 85.0 M (12 layers × 768) | 85.0 M |
+| Decision head | 15.0 M (Laya native) | **15.0 M (identical)** | 4 separate classifiers (≈0.6 M each) |
+| **Total parameters** | **321.9 M** | **117.2 M** | 102.3 M |
+| Context length | 8,192 | 512 | 512 |
+| Weight dtype | F16 | F16 | fp32 (can convert to F16) |
+| Output | Distribution over options + abstention | Distribution over options + abstention | softmax probabilities |
+| Task coverage | **1 model covers 4 question types** | **1 model covers 4 question types** | **4 tasks need 4 models** |
+| Cost of adding a class | Edit the question's `criteria` | Edit the question's `criteria` | Must retrain |
 
 ---
 
-## 1. 准确率（全量口径）
+## 1. Accuracy (full protocol)
 
-| 任务 | n | mmBERT-Laya | FinBERT-Laya | FinBERT | 最优 |
+| Task | n | mmBERT-Laya | FinBERT-Laya | FinBERT | Best |
 |---|---:|---:|---:|---:|---|
-| FinFE 社交情绪 | 2,020 | 77.97 | 78.02 | **79.26** | FinBERT |
-| FinNSP 有无负面 | 500 | 95.00 | 95.20 | **95.60** | FinBERT |
-| FinNSP 负面主体 | 259 | **96.91** | 95.75 | 95.37 | mmBERT-Laya |
-| CFSC-ABSA 方面级 | 8,312 | **93.37** | 93.01 | 92.78 | mmBERT-Laya |
+| FinFE social sentiment | 2,020 | 77.97 | 78.02 | **79.26** | FinBERT |
+| FinNSP negative presence | 500 | 95.00 | 95.20 | **95.60** | FinBERT |
+| FinNSP negative subject | 259 | **96.91** | 95.75 | 95.37 | mmBERT-Laya |
+| CFSC-ABSA aspect-level | 8,312 | **93.37** | 93.01 | 92.78 | mmBERT-Laya |
 
-**跨度**：四个任务上三个模型的极差只有 **1.54 pt**（FinNSP 负面主体）到 **0.59 pt**（CFSC）。也就是说**换 encoder 几乎不影响准确率**。
+**Spread**: across the four tasks the range between best and worst model is only **1.54 pt** (FinNSP negative subject) down to **0.59 pt** (CFSC). In other words, **swapping the encoder barely affects accuracy**.
 
 ---
 
-## 2. 准确率（严格口径，剔除与训练集重叠样本）
+## 2. Accuracy (strict protocol, training-set overlap removed)
 
-| 任务 | n（剔除后） | mmBERT-Laya | FinBERT-Laya | FinBERT | 最优 |
+| Task | n (after removal) | mmBERT-Laya | FinBERT-Laya | FinBERT | Best |
 |---|---:|---:|---:|---:|---|
-| FinFE 社交情绪 | 923（−1,097） | 77.03 | **80.28** | 79.52 | **FinBERT-Laya ⭐** |
-| FinNSP 有无负面 | 499（−1） | 94.99 | 95.19 | **95.59** | FinBERT |
-| FinNSP 负面主体 | 259（−0） | **96.91** | 95.75 | 95.37 | mmBERT-Laya |
-| CFSC-ABSA 方面级 | 7,870（−442） | **93.58** | 93.01 | 92.94 | mmBERT-Laya |
+| FinFE social sentiment | 923 (−1,097) | 77.03 | **80.28** | 79.52 | **FinBERT-Laya ⭐** |
+| FinNSP negative presence | 499 (−1) | 94.99 | 95.19 | **95.59** | FinBERT |
+| FinNSP negative subject | 259 (−0) | **96.91** | 95.75 | 95.37 | mmBERT-Laya |
+| CFSC-ABSA aspect-level | 7,870 (−442) | **93.58** | 93.01 | 92.94 | mmBERT-Laya |
 
-**FinFE 上 FinBERT-Laya 反超 mmBERT-Laya 3.25 pt** —— 这是全部对比里最大的一处差异。原因：FinFE 评测集 54.3% 与训练集文本重复，mmBERT-Laya 从 laya 官方 checkpoint 续训、在"见过"的样本上有记忆优势；剔除后优势消失，而 FinBERT-Laya 的决策头是从零学的，泛化更好。
+**On FinFE, FinBERT-Laya beats mmBERT-Laya by 3.25 pt** — the largest difference in the whole comparison. The reason: 54.3% of the FinFE evaluation set duplicates training text, and mmBERT-Laya continues from the official laya checkpoint, giving it a memorization edge on "seen" samples. Remove the overlap and that edge vanishes, while FinBERT-Laya's decision head was learned from scratch and generalizes better.
 
 ---
 
 ## 3. Macro-F1
 
-| 任务 | 口径 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Protocol | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---|---:|---:|---:|
-| FinFE | 全量 | **0.7690** | 0.7629 | 0.7776 |
-| FinFE | 严格 | 0.7094 | **0.7371** | 0.7258 |
-| FinNSP 有无负面 | 全量 | 0.9499 | 0.9520 | **0.9559** |
-| FinNSP 有无负面 | 严格 | 0.9498 | 0.9518 | **0.9558** |
-| FinNSP 负面主体 | 全量 | 0.5419 | 0.4669 | 0.5038 |
-| FinNSP 负面主体（有样本 14 类） | 全量 | **0.8129** | 0.7003 | 0.6838 |
-| CFSC-ABSA | 全量 | **0.8993** | 0.8909 | 0.8881 |
-| CFSC-ABSA | 严格 | **0.9025** | 0.8905 | 0.8902 |
+| FinFE | full | **0.7690** | 0.7629 | 0.7776 |
+| FinFE | strict | 0.7094 | **0.7371** | 0.7258 |
+| FinNSP negative presence | full | 0.9499 | 0.9520 | **0.9559** |
+| FinNSP negative presence | strict | 0.9498 | 0.9518 | **0.9558** |
+| FinNSP negative subject | full | 0.5419 | 0.4669 | 0.5038 |
+| FinNSP negative subject (14 classes with support) | full | **0.8129** | 0.7003 | 0.6838 |
+| CFSC-ABSA | full | **0.8993** | 0.8909 | 0.8881 |
+| CFSC-ABSA | strict | **0.9025** | 0.8905 | 0.8902 |
 
-> `FinNSP 负面主体` 原始 Macro-F1（0.5419 / 0.4669 / 0.5038）被零支持类别严重压低：21 类里 7 类在测试集出现 0 次，被强制计 0。**只看有样本的 14 类**才是可比数字，见 `macro_f1_present` 那一行。FinBERT 词表只有 19 类（缺「北京资易贷金融信息服务有限公司」「易捷金融」），它的 14 类有样本。
+> The raw Macro-F1 for `FinNSP negative subject` (0.5419 / 0.4669 / 0.5038) is dragged down heavily by zero-support classes: 7 of the 21 classes never appear in the test set and are forced to 0. **Only the 14 classes with support** give a comparable number — see the `macro_f1_present` row. FinBERT's vocabulary has only 19 classes (it lacks 「北京资易贷金融信息服务有限公司」 and 「易捷金融」); its 14-class figure is over classes with support.
 
 ---
 
-## 4. 概率校准
+## 4. Probability calibration
 
-### 4.1 ECE（越低越好）
+### 4.1 ECE (lower is better)
 
-| 任务 | 口径 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Protocol | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---|---:|---:|---:|
-| FinFE | 全量 | 0.0739 | **0.0485** | 0.0947 |
-| FinFE | 严格 | **0.0628** | 0.0710 | 0.0876 |
-| FinNSP 有无负面 | 全量 | 0.0506 | 0.0882 | **0.0311** |
-| FinNSP 负面主体 | 全量 | 0.1984 | 0.1546 | **0.0616** |
-| CFSC-ABSA | 全量 | 0.0638 | 0.0607 | **0.0339** |
-| CFSC-ABSA | 严格 | 0.0658 | 0.0618 | **0.0326** |
+| FinFE | full | 0.0739 | **0.0485** | 0.0947 |
+| FinFE | strict | **0.0628** | 0.0710 | 0.0876 |
+| FinNSP negative presence | full | 0.0506 | 0.0882 | **0.0311** |
+| FinNSP negative subject | full | 0.1984 | 0.1546 | **0.0616** |
+| CFSC-ABSA | full | 0.0638 | 0.0607 | **0.0339** |
+| CFSC-ABSA | strict | 0.0658 | 0.0618 | **0.0326** |
 
-### 4.2 NLL（越低越好）
+### 4.2 NLL (lower is better)
 
-| 任务 | 口径 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Protocol | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---|---:|---:|---:|
-| FinFE | 全量 | 0.6467 | **0.5878** | 0.6244 |
-| FinFE | 严格 | 0.6233 | **0.5328** | 0.5713 |
-| FinNSP 有无负面 | 全量 | **0.1799** | 0.1851 | 0.1517 |
-| FinNSP 负面主体 | 全量 | 0.3514 | 0.3113 | **0.2821** |
-| CFSC-ABSA | 全量 | 0.2658 | 0.2424 | **0.2157** |
-| CFSC-ABSA | 严格 | 0.2597 | 0.2414 | **0.2138** |
+| FinFE | full | 0.6467 | **0.5878** | 0.6244 |
+| FinFE | strict | 0.6233 | **0.5328** | 0.5713 |
+| FinNSP negative presence | full | **0.1799** | 0.1851 | 0.1517 |
+| FinNSP negative subject | full | 0.3514 | 0.3113 | **0.2821** |
+| CFSC-ABSA | full | 0.2658 | 0.2424 | **0.2157** |
+| CFSC-ABSA | strict | 0.2597 | 0.2414 | **0.2138** |
 
-### 4.3 Brier（多分类，越低越好）
+### 4.3 Brier (multiclass, lower is better)
 
-| 任务 | 口径 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Protocol | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---|---:|---:|---:|
-| FinFE | 全量 | 0.3516 | **0.3259** | 0.3285 |
-| FinFE | 严格 | 0.3437 | **0.2916** | 0.3066 |
-| FinNSP 有无负面 | 全量 | 0.0873 | 0.0815 | **0.0740** |
-| FinNSP 负面主体 | 全量 | 0.0952 | **0.0850** | 0.0991 |
-| CFSC-ABSA | 全量 | 0.1170 | **0.1119** | 0.1126 |
-| CFSC-ABSA | 严格 | 0.1134 | 0.1113 | **0.1106** |
+| FinFE | full | 0.3516 | **0.3259** | 0.3285 |
+| FinFE | strict | 0.3437 | **0.2916** | 0.3066 |
+| FinNSP negative presence | full | 0.0873 | 0.0815 | **0.0740** |
+| FinNSP negative subject | full | 0.0952 | **0.0850** | 0.0991 |
+| CFSC-ABSA | full | 0.1170 | **0.1119** | 0.1126 |
+| CFSC-ABSA | strict | 0.1134 | 0.1113 | **0.1106** |
 
-### 4.4 AURC（风险-覆盖曲线下面积，越低越好）
+### 4.4 AURC (area under the risk–coverage curve, lower is better)
 
-| 任务 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---:|---:|---:|
 | FinFE | 0.1184 | 0.0995 | **0.0953** |
-| FinNSP 有无负面 | **0.0073** | 0.0097 | 0.0040 |
-| FinNSP 负面主体 | **0.0067** | 0.0180 | 0.0089 |
+| FinNSP negative presence | **0.0073** | 0.0097 | 0.0040 |
+| FinNSP negative subject | **0.0067** | 0.0180 | 0.0089 |
 | CFSC-ABSA | 0.0213 | 0.0119 | **0.0098** |
 
-### 4.5 平均置信度
+### 4.5 Mean confidence
 
-| 任务 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---:|---:|---:|
 | FinFE | 0.8517 | 0.8287 | **0.8840** |
-| FinNSP 有无负面 | 0.9174 | 0.8805 | **0.9852** |
-| FinNSP 负面主体 | 0.7745 | 0.8172 | **0.9080** |
+| FinNSP negative presence | 0.9174 | 0.8805 | **0.9852** |
+| FinNSP negative subject | 0.7745 | 0.8172 | **0.9080** |
 | CFSC-ABSA | 0.8883 | 0.8902 | **0.9616** |
 
-> **FinBERT 分类头的置信度普遍最高（0.88~0.99）但 ECE 最低**，说明它的高置信是"有依据的"；FinBERT-Laya 置信度偏低（0.83~0.89）却 ECE 更好，说明它更保守。两者策略不同，都能用。
+> **The FinBERT classifier has the highest confidence overall (0.88–0.99) yet the lowest ECE**, meaning its high confidence is earned. FinBERT-Laya sits lower (0.83–0.89) but has better ECE, meaning it is more conservative. Different strategies; both are usable.
 
 ---
 
-## 5. 选择性准确率（按置信度取前 X% 自动处理）
+## 5. Selective accuracy (top X% by confidence, auto-processed)
 
-### 5.1 全量口径
+### 5.1 Full protocol
 
-| 任务 | 覆盖 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Coverage | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---|---:|---:|---:|
 | FinFE | @50% | 89.50 | **91.39** | 90.99 |
 | FinFE | @80% | 83.79 | **85.09** | 85.02 |
 | FinFE | @90% | 81.35 | 81.96 | **82.40** |
-| FinNSP 有无负面 | @50% | 99.60 | 99.60 | **100.00** |
-| FinNSP 有无负面 | @80% | 99.00 | 98.75 | **99.75** |
-| FinNSP 有无负面 | @90% | **98.22** | 98.00 | 98.00 |
-| FinNSP 负面主体 | @50% | 99.23 | 98.46 | **99.23** |
-| FinNSP 负面主体 | @80% | **99.52** | 97.58 | 98.07 |
-| FinNSP 负面主体 | @90% | **99.14** | 97.85 | 97.42 |
+| FinNSP negative presence | @50% | 99.60 | 99.60 | **100.00** |
+| FinNSP negative presence | @80% | 99.00 | 98.75 | **99.75** |
+| FinNSP negative presence | @90% | **98.22** | 98.00 | 98.00 |
+| FinNSP negative subject | @50% | 99.23 | 98.46 | **99.23** |
+| FinNSP negative subject | @80% | **99.52** | 97.58 | 98.07 |
+| FinNSP negative subject | @90% | **99.14** | 97.85 | 97.42 |
 | CFSC-ABSA | @50% | 98.65 | 99.47 | **99.83** |
 | CFSC-ABSA | @80% | 98.11 | **98.18** | 98.32 |
 | CFSC-ABSA | @90% | 96.58 | **96.68** | 96.38 |
 
-### 5.2 严格口径
+### 5.2 Strict protocol
 
-| 任务 | 覆盖 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Task | Coverage | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---|---:|---:|---:|
 | FinFE | @50% | 92.21 | **95.02** | 94.81 |
 | FinFE | @80% | 84.28 | **87.94** | 86.72 |
 | FinFE | @90% | 80.99 | **84.00** | 83.39 |
-| FinNSP 有无负面 | @50% | 99.60 | 99.60 | **100.00** |
-| FinNSP 有无负面 | @80% | 99.00 | 98.75 | **99.75** |
-| FinNSP 有无负面 | @90% | **98.22** | 98.00 | 98.00 |
-| FinNSP 负面主体 | @50% | 99.23 | 98.46 | **99.23** |
-| FinNSP 负面主体 | @80% | **99.52** | 97.58 | 98.07 |
-| FinNSP 负面主体 | @90% | **99.14** | 97.85 | 97.42 |
+| FinNSP negative presence | @50% | 99.60 | 99.60 | **100.00** |
+| FinNSP negative presence | @80% | 99.00 | 98.75 | **99.75** |
+| FinNSP negative presence | @90% | **98.22** | 98.00 | 98.00 |
+| FinNSP negative subject | @50% | 99.23 | 98.46 | **99.23** |
+| FinNSP negative subject | @80% | **99.52** | 97.58 | 98.07 |
+| FinNSP negative subject | @90% | **99.14** | 97.85 | 97.42 |
 | CFSC-ABSA | @50% | 98.75 | 99.49 | **99.82** |
 | CFSC-ABSA | @80% | 98.22 | 98.27 | **98.33** |
 | CFSC-ABSA | @90% | **96.82** | 96.75 | 96.43 |
 
-**严格口径下 FinFE 的 @50 达到 95.02%** —— 意味着剔除重叠样本后，FinBERT-Laya 对一半样本可以做到 95% 准确率全自动处理。
+**Under the strict protocol, FinFE @50 reaches 95.02%** — meaning that after removing overlapping samples, FinBERT-Laya can fully automate half the traffic at 95% accuracy.
 
 ---
 
-## 6. 各类别召回率（全量口径）
+## 6. Per-class recall (full protocol)
 
-### 6.1 FinFE（3 类）
+### 6.1 FinFE (3 classes)
 
-| 类别 | 支持数 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Class | Support | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---:|---:|---:|---:|
 | negative | 574 | 0.780 | 0.791 | **0.819** |
 | neutral | 560 | **0.696** | 0.611 | 0.639 |
 | positive | 886 | 0.832 | **0.880** | 0.872 |
 
-### 6.2 FinNSP 有无负面（2 类）
+### 6.2 FinNSP negative presence (2 classes)
 
-| 类别 | 支持数 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Class | Support | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---:|---:|---:|---:|
 | true | 259 | **0.961** | 0.950 | 0.958 |
 | false | 241 | 0.938 | **0.954** | 0.954 |
 
-### 6.3 FinNSP 负面主体（14 个有样本类）
+### 6.3 FinNSP negative subject (14 classes with support)
 
-| 实体 | 支持数 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Entity | Support | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---:|---:|---:|---:|
 | 以上都不是 | 102 | **0.961** | **0.961** | 0.951 |
 | 小资钱包 | 77 | **1.000** | **1.000** | **1.000** |
@@ -199,127 +199,127 @@
 | 摩尔龙 | 1 | **1.000** | 0.000 | 0.000 |
 | 资易贷金融信息服务有限公司 | 1 | 0.000 | 0.000 | 0.000 |
 
-> 三个模型在 8 个实体上都是满分 1.000。差异只集中在 `钱宝`（4 条）、`摩尔龙`（1 条）这两个极小样本类，以及 `钱宝网` 的 19 条。**0.8129 vs 0.7003 vs 0.6838 的差距几乎全部来自这 5 条样本**，不宜当作能力差异解读。
+> All three models score a perfect 1.000 on 8 entities. The differences concentrate in two extremely small classes — `钱宝` (4 samples) and `摩尔龙` (1 sample) — plus `钱宝网` (19 samples). **Nearly all of the 0.8129 vs. 0.7003 vs. 0.6838 gap comes from those 5 samples**, and should not be read as a capability difference.
 
-### 6.4 CFSC-ABSA（3 类）
+### 6.4 CFSC-ABSA (3 classes)
 
-| 类别 | 支持数 | mmBERT-Laya | FinBERT-Laya | FinBERT |
+| Class | Support | mmBERT-Laya | FinBERT-Laya | FinBERT |
 |---|---:|---:|---:|---:|
 | negative | 2,146 | **0.948** | 0.944 | 0.943 |
 | neutral | 1,032 | **0.797** | 0.751 | 0.749 |
 | positive | 5,134 | 0.955 | **0.960** | 0.958 |
 
-**neutral 是全场短板**（FinFE 0.611~0.696，CFSC 0.749~0.797）。mmBERT-Laya 在 CFSC 的 neutral 上领先 4.6~4.8 pt，是它在该任务上 Macro-F1 领先的主因。
+**`neutral` is the weak spot across the board** (FinFE 0.611–0.696, CFSC 0.749–0.797). mmBERT-Laya leads by 4.6–4.8 pt on CFSC neutral, which is the main reason it leads on Macro-F1 for that task.
 
 ---
 
-## 7. 部署指标
+## 7. Deployment metrics
 
-单卡 RTX 4090，batch=1 串行，权重体积只算权重文件（已排除 `checkpoint_latest/` 快照）。
+Single RTX 4090, batch=1 serial, weight size counting only the weight file (excluding the `checkpoint_latest/` snapshot).
 
-| | mmBERT-Laya | FinBERT-Laya | FinBERT（单任务） | FinBERT（4 任务等效） |
+| | mmBERT-Laya | FinBERT-Laya | FinBERT (single task) | FinBERT (4-task equivalent) |
 |---|---:|---:|---:|---:|
-| 参数量 | 321.9 M | **117.2 M** | 102.3 M | 409.2 M |
-| 权重体积 | 614.0 MB | **223.6 MB** | 390.2 MB (fp32) / 195 MB (F16) | 1,560 MB (fp32) / **780 MB** (F16) |
-| 延迟 p50 | 18.64 ms | **8.66 ms** | 5.93 ms | 5.93 ms（并行）/ 23.7 ms（串行 4 次） |
-| 延迟 p95 | 19.34 ms | **8.92 ms** | 5.98 ms | 5.98 ms（并行） |
-| 吞吐 batch=1 | 53.0 QPS | **113.0 QPS** | 145.3 QPS | 36.3 QPS（串行 4 次） |
-| 吞吐 batch=32 | — | — | 2,857.7 QPS | — |
-| 显存峰值 | 1,499 MB | **667 MB** | 486 MB | 4 × 486 = 1,944 MB |
-| 需要几个模型 | **1** | **1** | 4 | 4 |
+| Parameters | 321.9 M | **117.2 M** | 102.3 M | 409.2 M |
+| Weight size | 614.0 MB | **223.6 MB** | 390.2 MB (fp32) / 195 MB (F16) | 1,560 MB (fp32) / **780 MB** (F16) |
+| Latency p50 | 18.64 ms | **8.66 ms** | 5.93 ms | 5.93 ms (parallel) / 23.7 ms (4 serial) |
+| Latency p95 | 19.34 ms | **8.92 ms** | 5.98 ms | 5.98 ms (parallel) |
+| Throughput batch=1 | 53.0 QPS | **113.0 QPS** | 145.3 QPS | 36.3 QPS (4 serial) |
+| Throughput batch=32 | — | — | 2,857.7 QPS | — |
+| Peak GPU memory | 1,499 MB | **667 MB** | 486 MB | 4 × 486 = 1,944 MB |
+| Models needed | **1** | **1** | 4 | 4 |
 
-### 相对 mmBERT-Laya 的变化
+### Change relative to mmBERT-Laya
 
-| | FinBERT-Laya | FinBERT（4 任务等效） |
+| | FinBERT-Laya | FinBERT (4-task equivalent) |
 |---|---:|---:|
-| 参数量 | **−63.6%** | +27.1% |
-| 权重体积 | **−63.6%** | +27.0%（F16） |
-| 延迟 | **−53.5%** | +27.1%（串行） |
-| 吞吐 | **×2.13** | −31.5%（串行） |
-| 显存 | **−55.5%** | +29.7% |
+| Parameters | **−63.6%** | +27.1% |
+| Weight size | **−63.6%** | +27.0% (F16) |
+| Latency | **−53.5%** | +27.1% (serial) |
+| Throughput | **×2.13** | −31.5% (serial) |
+| GPU memory | **−55.5%** | +29.7% |
 
-> **关键结论**：只有 FinBERT-Laya 同时做到"一个模型覆盖全部任务"和"比原方案更小更快"。FinBERT 分类头单任务最快，但 4 个任务要 4 个模型，等效成本反而超过 mmBERT-Laya。
+> **Key conclusion**: only FinBERT-Laya simultaneously achieves "one model covers every task" and "smaller and faster than the original". The FinBERT classifier is fastest per single task, but four tasks need four models, making its equivalent cost higher than mmBERT-Laya's.
 
 ---
 
-## 8. 训练成本
+## 8. Training cost
 
-| | mmBERT-Laya | FinBERT-Laya | FinBERT 分类头 |
+| | mmBERT-Laya | FinBERT-Laya | FinBERT classifier |
 |---|---|---|---|
-| 需训练的模型数 | 1 | 1 | **4** |
-| 优化步数 | 3,068 | 3,068 | — |
-| 训练数据 | 55,562 题 | 55,562 题 | 各任务单独（33,184 / 16,157 / 4,000） |
-| 耗时 | 32 分钟 | **23 分钟** | 约 5.4 分钟（218 + 63 + 28 + 16 s） |
-| 显存 | 9.2 GB | **~3.8 GB** | ~0.5 GB |
-| 末 epoch loss | 0.2018 | 0.3047 | absa 0.1371 / finfe 0.3593 / nsp_has 0.0429 / nsp_subject 0.2516 |
-| 起点 | laya 官方 ckpt（loss 0.3983） | 决策头**随机初始化**（loss 1.3957） | ImageNet 无关，纯 FinBERT 预训练 |
-| 校准 | 自动温度标定 + 弃权阈值拟合 | 自动温度标定 + 弃权阈值拟合 | 无（原始 softmax） |
+| Models to train | 1 | 1 | **4** |
+| Optimizer steps | 3,068 | 3,068 | — |
+| Training data | 55,562 questions | 55,562 questions | Per task (33,184 / 16,157 / 4,000) |
+| Wall time | 32 min | **23 min** | About 5.4 min (218 + 63 + 28 + 16 s) |
+| GPU memory | 9.2 GB | **~3.8 GB** | ~0.5 GB |
+| Final-epoch loss | 0.2018 | 0.3047 | absa 0.1371 / finfe 0.3593 / nsp_has 0.0429 / nsp_subject 0.2516 |
+| Starting point | Official laya ckpt (loss 0.3983) | Decision head **randomly initialized** (loss 1.3957) | No ImageNet; pure FinBERT pretraining |
+| Calibration | Automatic temperature fitting + abstention-threshold fitting | Automatic temperature fitting + abstention-threshold fitting | None (raw softmax) |
 
-> **loss 不可跨模型比**：三者起点不同。mmBERT-Laya 从已微调过的 checkpoint 出发，FinBERT-Laya 决策头是随机的，FinBERT 各分类头也是随机的。只能比终点指标（§1~§5），不能比 loss 降幅。
+> **Loss is not comparable across models**: all three start from different points. mmBERT-Laya starts from an already fine-tuned checkpoint, while FinBERT-Laya's decision head and FinBERT's classifiers are random. Compare endpoint metrics only (§1–§5), never the size of the loss drop.
 
-### 自动产出的推理配置
+### Inference config produced automatically
 
 | | mmBERT-Laya | FinBERT-Laya |
 |---|---|---|
-| choice 温度 | 1.4378 | 1.3531 |
-| noul 温度 | 1.4585 | 1.9008 |
-| 弃权阈值 `choice:3-5` | 0.6217 | 0.5968 |
-| 弃权阈值 `noul:2` | 0.6661 | 0.8953 |
-| 弃权阈值 `choice:11+` | 0.7562 | 0.7937 |
+| choice temperature | 1.4378 | 1.3531 |
+| noul temperature | 1.4585 | 1.9008 |
+| Abstention threshold `choice:3-5` | 0.6217 | 0.5968 |
+| Abstention threshold `noul:2` | 0.6661 | 0.8953 |
+| Abstention threshold `choice:11+` | 0.7562 | 0.7937 |
 
 ---
 
-## 9. 综合对照：谁在哪项最优
+## 9. Head-to-head: who wins where
 
-| 维度 | 最优 | 说明 |
+| Dimension | Best | Note |
 |---|---|---|
-| FinFE 准确率（全量） | **FinBERT** 79.26 | 领先 1.24 pt |
-| FinFE 准确率（严格） | **FinBERT-Laya** 80.28 | 领先 0.76~3.25 pt |
-| FinNSP 有无负面 | **FinBERT** 95.60 | 领先 0.40 pt |
-| FinNSP 负面主体 | **mmBERT-Laya** 96.91 | 领先 1.16 pt，长尾样本驱动 |
-| CFSC-ABSA 准确率 | **mmBERT-Laya** 93.37 / 93.58 | 领先 0.36~0.57 pt |
-| CFSC-ABSA Macro-F1 | **mmBERT-Laya** 0.8993 / 0.9025 | 领先 0.008~0.012 |
-| neutral 召回（CFSC） | **mmBERT-Laya** 0.797 | 领先 4.6 pt |
-| ECE（FinFE 全量） | **FinBERT-Laya** 0.0485 | 领先 0.025 |
-| ECE（FinNSP/CFSC） | **FinBERT** 0.0311 / 0.0339 | 领先 0.02~0.13 |
-| NLL | **FinBERT** 3/4 任务 | FinFE 是 FinBERT-Laya 最好 |
-| Brier | 分散 | FinBERT-Laya 在 FinFE/负面主体胜出 |
-| AURC | **FinBERT** 2/4，mmBERT-Laya 2/4 | FinBERT-Laya 0/4 |
-| 选择性准确率 @50 | **FinBERT-Laya**（FinFE 严格 95.02） | — |
-| 参数量 / 体积 | **FinBERT**（单任务）/ **FinBERT-Laya**（全任务） | — |
-| 延迟 / 吞吐 | **FinBERT**（单任务） | — |
-| 显存 | **FinBERT** 486 MB | — |
-| 长上下文 | **mmBERT-Laya** 8,192 | FinBERT 只有 512 |
-| 训练速度 | **FinBERT** 5.4 分钟（但训 4 个） | FinBERT-Laya 23 分钟训 1 个 |
-| 新增类别成本 | **Laya 系**（改题面即可） | FinBERT 必须重训 |
+| FinFE accuracy (full) | **FinBERT** 79.26 | Ahead by 1.24 pt |
+| FinFE accuracy (strict) | **FinBERT-Laya** 80.28 | Ahead by 0.76–3.25 pt |
+| FinNSP negative presence | **FinBERT** 95.60 | Ahead by 0.40 pt |
+| FinNSP negative subject | **mmBERT-Laya** 96.91 | Ahead by 1.16 pt, driven by long-tail samples |
+| CFSC-ABSA accuracy | **mmBERT-Laya** 93.37 / 93.58 | Ahead by 0.36–0.57 pt |
+| CFSC-ABSA Macro-F1 | **mmBERT-Laya** 0.8993 / 0.9025 | Ahead by 0.008–0.012 |
+| neutral recall (CFSC) | **mmBERT-Laya** 0.797 | Ahead by 4.6 pt |
+| ECE (FinFE full) | **FinBERT-Laya** 0.0485 | Ahead by 0.025 |
+| ECE (FinNSP/CFSC) | **FinBERT** 0.0311 / 0.0339 | Ahead by 0.02–0.13 |
+| NLL | **FinBERT** on 3 of 4 tasks | FinFE goes to FinBERT-Laya |
+| Brier | Mixed | FinBERT-Laya wins on FinFE and negative subject |
+| AURC | **FinBERT** 2/4, mmBERT-Laya 2/4 | FinBERT-Laya 0/4 |
+| Selective accuracy @50 | **FinBERT-Laya** (FinFE strict 95.02) | — |
+| Parameters / size | **FinBERT** (single task) / **FinBERT-Laya** (all tasks) | — |
+| Latency / throughput | **FinBERT** (single task) | — |
+| GPU memory | **FinBERT** 486 MB | — |
+| Long context | **mmBERT-Laya** 8,192 | FinBERT only reaches 512 |
+| Training speed | **FinBERT** 5.4 min (but trains 4 models) | FinBERT-Laya trains 1 in 23 min |
+| Cost of adding a class | **The Laya pair** (edit the question text) | FinBERT must retrain |
 
 ---
 
-## 10. 选型决策树
+## 10. Selection decision tree
 
 ```
-需要一份权重覆盖多种题 + 需要置信度/弃权？
-├─ 是
-│  ├─ 显存/延迟敏感，或长尾实体识别要求高？
-│  │  ├─ 长尾实体重要 → mmBERT-Laya（neg_subject mF1 0.8129，8192 上下文）
-│  │  └─ 资源敏感     → FinBERT-Laya（117M / 223.6 MB / 8.66 ms，其余任务全持平）
-│  └─ 都不要紧 → 两者皆可，FinBERT-Laya 更省
-└─ 否，只要单任务最强
-   └─ FinBERT 分类头（FinFE 79.26，5.93 ms，但每个任务一个模型）
+Need one weight set covering several question types + confidence/abstention?
+├─ Yes
+│  ├─ Tight on GPU memory/latency, or strict long-tail entity requirements?
+│  │  ├─ Long-tail entities matter → mmBERT-Laya (neg_subject mF1 0.8129, 8192 context)
+│  │  └─ Resource-sensitive       → FinBERT-Laya (117M / 223.6 MB / 8.66 ms, on par elsewhere)
+│  └─ Neither is a concern → Either works; FinBERT-Laya is leaner
+└─ No, just want the strongest single task
+   └─ FinBERT classifier (FinFE 79.26, 5.93 ms, but one model per task)
 ```
 
-### 一句话版本
+### In one line each
 
-- **FinBERT**：单任务最快最准，但要 4 个模型，等效 780 MB / 1,944 MB 显存。
-- **FinBERT-Laya**：一个 223.6 MB 的模型全包，准确率与 322M 版持平，FinFE 严格口径还更好。
-- **mmBERT-Laya**：唯一能处理 8,192 长文本、长尾实体最强的方案。
+- **FinBERT**: fastest and most accurate per single task, but needs 4 models — 780 MB and 1,944 MB of GPU memory in equivalent terms.
+- **FinBERT-Laya**: one 223.6 MB model covers everything, at accuracy on par with the 322M version and better on FinFE under the strict protocol.
+- **mmBERT-Laya**: the only option that handles 8,192-token inputs, and the strongest on long-tail entities.
 
 ---
 
-## 11. 数据可信度提醒
+## 11. Data-reliability caveats
 
-1. **FinFE 全量口径有 54.3% 训练集重叠**，全量数字（77.97 / 78.02 / 79.26）**不能当作泛化能力**，请以严格口径（77.03 / 80.28 / 79.52）为准。
-2. **FinNSP 负面主体只有 259 条**，102 条是「以上都不是」，剩 157 条散在 13 个实体，多数只有 1~7 条。逐类召回波动极大，`macro_f1_present` 的差距主要由 5 条样本驱动。
-3. **`neg_has` 的 noul 温度在 34 条样本上拟合**（两个 Laya 都带 `"fitted on only 34 calibration items"` 警告），该项 ECE 可信度低于其他任务。
-4. **单 seed**。所有数字是 `seed=0` 一次结果。1 pt 以内的差距（CFSC 0.36~0.57 pt、FinNSP 0.20~0.40 pt）不应视为显著；FinFE 严格口径的 3.25 pt 差距较大，仍建议多 seed 复核。
-5. **FinBERT 的 195 MB 是 F16 实测**，转换脚本 `common/to_fp16.py` 是事后补写、未在服务器重跑；390.2 MB 的 fp32 是确定可复现的。
+1. **The FinFE full protocol has 54.3% training-set overlap.** The full numbers (77.97 / 78.02 / 79.26) **must not be cited as generalization ability**; use the strict protocol (77.03 / 80.28 / 79.52).
+2. **FinNSP negative subject has only 259 cases**: 102 are `以上都不是` and the remaining 157 spread over 13 entities, most with 1–7 samples. Per-class recall fluctuates wildly, and the `macro_f1_present` gap is driven mainly by 5 samples.
+3. **The `neg_has` noul temperature was fitted on 34 samples** (both Laya models carry the warning `"fitted on only 34 calibration items"`), so its ECE is less trustworthy than other tasks.
+4. **Single seed.** Every number is one run at `seed=0`. Differences within 1 pt (CFSC 0.36–0.57 pt, FinNSP 0.20–0.40 pt) should not be treated as significant; the 3.25 pt FinFE strict gap is larger but still worth re-checking with multiple seeds.
+5. **FinBERT's 195 MB is a measured F16 conversion.** The conversion script `common/to_fp16.py` was written afterwards and has not been re-run on the server; the 390.2 MB fp32 figure is the reliably reproducible one.
