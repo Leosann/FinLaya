@@ -91,6 +91,16 @@ ans = router.predict("试仓500股，看看门道！", questions, model=name)
 
 完整对比见 [`docs/THREE_WAY_COMPARISON.md`](../../docs/THREE_WAY_COMPARISON.md)。
 
+## 上传到 HuggingFace
+
+完整权重的合并版已经组装好（硬链接，不额外占空间），可直接拖拽上传：
+
+```
+weights/hf-ready/          9 个文件 / 224.2 MB
+```
+
+上传步骤、CLI 命令、上传后自查清单见 [`../HF_UPLOAD_GUIDE.md`](../HF_UPLOAD_GUIDE.md)。
+
 ## FinBERT 四个分类头的权重
 
 **不在本仓库**。四个头是 fp32 各 391 MB（合计 1.56 GB），放进来会让仓库超过 1 GB。但重训只要 5.4 分钟：

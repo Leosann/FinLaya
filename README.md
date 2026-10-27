@@ -252,15 +252,18 @@ bash restore.sh        # 合并 + SHA256 校验
 
 合并后即为 `laya.load()` 认的标准布局，可直接 `Router.register(name, path)`。详见 [`weights/finbert-laya/README.md`](weights/finbert-laya/README.md)。
 
-**上传到 HuggingFace**：权重也已准备好一键上传脚本（含模型卡），在能访问 `huggingface.co` 的网络里执行：
+**上传到 HuggingFace**：权重已组装成可直接上传的目录（含模型卡），两种方式任选：
 
 ```bash
+# 方式一：脚本自动传（在能访问 huggingface.co 的网络里）
 pip install -U huggingface_hub
 export HF_TOKEN=hf_xxxxxxxxxxxx                # Write 权限
 python weights/upload_to_hf.py --repo <用户名>/FinLaya-117M
+
+# 方式二：手动网页拖拽，见 weights/HF_UPLOAD_GUIDE.md
 ```
 
-脚本会自动合并分片、校验 SHA256、组装 laya 布局并上传。加 `--dry-run` 可先看要传什么。详见 [`weights/upload_to_hf.py`](weights/upload_to_hf.py)。
+脚本会自动合并分片、校验 SHA256、组装 laya 布局并上传，加 `--dry-run` 可先看要传什么。手动上传的完整步骤（含上传后自查清单）见 [`weights/HF_UPLOAD_GUIDE.md`](weights/HF_UPLOAD_GUIDE.md)。
 
 > 本项目开发环境无法直连 `huggingface.co` / `api.huggingface.co` / `cdn-lfs.huggingface.co`（均超时），只有只读镜像 `hf-mirror.com` 可用，所以上传这一步需要你在本地执行。
 
