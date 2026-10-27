@@ -16,10 +16,10 @@ huggingface.co / api.huggingface.co / cdn-lfs.huggingface.co（全部超时）�
     export HF_TOKEN=hf_xxxxxxxxxxxx        # 或 hf auth login
 
     # 3) 上传
-    python weights/upload_to_hf.py --repo <你的用户名>/FinLaya-117M
+    python weights/upload_to_hf.py --repo <你的用户名>/FinLaya
 
     # 只看要传什么、不真传
-    python weights/upload_to_hf.py --repo <用户名>/FinLaya-117M --dry-run
+    python weights/upload_to_hf.py --repo <用户名>/FinLaya --dry-run
 
     # 想用国内镜像端点（注意：hf-mirror 不支持写，会失败）
     python weights/upload_to_hf.py --repo ... --endpoint https://hf-mirror.com
@@ -32,7 +32,7 @@ Token 权限
 ------------
 1. 校验 weights/finbert-laya/ 下的 3 个分片，合并成 model.safetensors
 2. 校验 SHA256（745cb939...）
-3. 组一个符合 laya 加载布局的上传目录：
+3. 组一个符合 laya 加载布局的上传目录（该目录的内容会落到**仓库根**）：
        model.safetensors / rl_agent_config.json / questions.json
        encoder/config.json / tokenizer/* / README.md（模型卡）
 4. 创建仓库（已存在则复用）并上传
@@ -126,7 +126,7 @@ def list_files(d):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--repo", required=True, help="例如 Leosann/FinLaya-117M")
+    ap.add_argument("--repo", required=True, help="例如 zhanghanshuo/FinLaya")
     ap.add_argument("--token", default=None, help="缺省读 HF_TOKEN 环境变量或本地登录态")
     ap.add_argument("--endpoint", default=None, help="自定义 Hub 端点（默认官方）")
     ap.add_argument("--private", action="store_true", help="创建私有仓库")
@@ -173,10 +173,14 @@ def main():
         print("OK")
 
         print("[*] 上传中（223 MB，视带宽约 1-10 分钟）...")
+        # path_in_repo="" 是关键：省缺时 huggingface_hub 会把 folder_path 的
+        # 目录名（如 hf_upload_xxxx）当成仓库内子目录，导致文件落到
+        # <repo>/hf-ready/... 而不是仓库根，模型卡和权重都不会被正确加载。
         api.upload_folder(
             folder_path=tmp,
             repo_id=args.repo,
             repo_type="model",
+            path_in_repo="",
             commit_message="Upload FinBERT-Laya 117M (CFSC-ABSA + FinFE + FinNSP)",
         )
 
