@@ -194,7 +194,9 @@ def aurc(probs, y):
     """风险-覆盖曲线下面积（越低越好）。"""
     conf = probs.max(axis=1)
     ok = (probs.argmax(axis=1) == y).astype(float)
-    order = np.argsort(-conf)
+    # kind="stable" 与 common/laya/laya_metrics.py 保持一致：置信度并列时，
+    # 默认 quicksort 的顺序随 numpy 版本变化，会让 aurc 不可复现。
+    order = np.argsort(-conf, kind="stable")
     ok = ok[order]
     cov = np.arange(1, len(ok) + 1) / len(ok)
     risk = 1.0 - np.cumsum(ok) / np.arange(1, len(ok) + 1)
@@ -207,7 +209,7 @@ def selective_at(probs, y, target_cov):
     conf = probs.max(axis=1)
     ok = (probs.argmax(axis=1) == y).astype(float)
     k = max(1, int(round(target_cov * len(conf))))
-    order = np.argsort(-conf)[:k]
+    order = np.argsort(-conf, kind="stable")[:k]   # 同上：截断处并列时顺序必须稳定
     return float(ok[order].mean()), float(conf[order].min())
 
 
