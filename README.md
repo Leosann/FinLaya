@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/logo-wordmark-260.png" alt="FinLaya" height="84" align="middle" />
+<img src="assets/logo-wordmark-260.png" alt="FinLaya" height="72" align="middle" />
 
-**Chinese financial sentiment as a decision problem — a third of the parameters, the same accuracy**
+# FinLaya: Chinese financial sentiment as a decision problem — a third of the parameters, the same accuracy
 
 Sentiment analysis reformulated as decisions over a closed option set: the model emits calibrated probabilities and can abstain by confidence.
 

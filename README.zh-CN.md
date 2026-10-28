@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/logo-wordmark-260.png" alt="FinLaya" height="84" align="middle" />
+<img src="assets/logo-wordmark-260.png" alt="FinLaya" height="72" align="middle" />
 
-**中文金融情感决策模型 —— 用 1/3 的参数量，拿到同等精度**
+# FinLaya：中文金融情感决策模型 —— 用 1/3 的参数量，拿到同等精度
 
 把情感分析重构为「在闭合选项集上的决策」，模型直接输出可校准的概率，并可按置信度决定是否弃权。
 
