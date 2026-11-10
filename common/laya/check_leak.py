@@ -44,8 +44,11 @@ def main():
         h = states(p)
         n = len(h)
         overlap = sum(1 for x in h if x in all_train)
+        if n == 0:
+            # 测试集为空时不能算重叠率（旧行为是 ZeroDivisionError 直接崩）。
+            print("警告: %s 一行样本都没有，重叠率按 0.0%% 记；请检查转换是否写出了数据" % name)
         print("%-16s rows=%-6d 与训练集重叠=%-6d (%.1f%%)  | cfsc=%d finfe=%d finnsp=%d"
-              % (name, n, overlap, 100.0 * overlap / n,
+              % (name, n, overlap, 100.0 * overlap / n if n else 0.0,
                  sum(1 for x in h if x in subsets["cfsc_absa_train"]),
                  sum(1 for x in h if x in subsets["finfe_train"]),
                  sum(1 for x in h if x in subsets["finnsp_train"])))
