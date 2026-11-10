@@ -73,6 +73,15 @@ def main():
                 try:
                     r = json.loads(line)
                     assert "state" in r and r["state"] not in (None, ""), "state 为空"
+                    # Laya 的 state 是文本或 {"text": ...}。数字/列表能通过上面的非空判断，
+                    # 但下游 sha(t) 会对 int/list 调 .encode 直接崩（check_leak、strict_acc、
+                    # laya_metrics 三处都是这个口径）。在校验入口拦住，报错才有意义。
+                    state = r["state"]
+                    assert isinstance(state, (str, dict)), \
+                        "state 必须是字符串或 dict，得到 %s" % type(state).__name__
+                    if isinstance(state, dict):
+                        assert isinstance(state.get("text"), (str, type(None))), \
+                            "state.text 必须是字符串"
                     qs = r.get("questions")
                     assert isinstance(qs, dict) and qs, "questions 为空"
                     for qid, qdef in qs.items():
