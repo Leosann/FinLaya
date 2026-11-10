@@ -147,6 +147,12 @@ def main():
         if strict and h in tr:
             continue
         by_q.setdefault(c["qid"], []).append((h, c))
+    if not by_q:
+        # 严格口径把样本全部剔除时，旧行为是写出一个空的 {} 指标文件并返回 0，
+        # 看起来像「跑成功了」。空结果没有意义，必须让调用方知道。
+        print("没有可计算的样本%s，不生成空的指标文件"
+              % ("（严格口径下全部与训练集重叠）" if strict else ""))
+        return 1
 
     out = {}
     for qid, items in sorted(by_q.items()):
@@ -177,7 +183,16 @@ def main():
                 probs.append([float(p.get(k, 0.0)) for k in classes])
                 y.append(classes.index(c["expected"]))
         probs = np.array(probs, dtype=float)
-        probs = probs / probs.sum(axis=1, keepdims=True)
+        row_sum = probs.sum(axis=1)
+        bad = ~np.isfinite(probs).all(axis=1) | (row_sum <= 0)
+        if bad.any():
+            # 缺 probabilities / 概率全 0 时，旧行为是 0/0 -> NaN：
+            # accuracy 和 macro-F1 反而会显示成漂亮的 1.0000（argmax 恒取 0），
+            # 只有 nll / brier 是 NaN，且退出码仍为 0。坏报告必须显式失败。
+            print("%s 有 %d 条样本的概率缺失或非法（全 0 / NaN / inf），无法计算指标；请检查报告 %s"
+                  % (qid, int(bad.sum()), report_path))
+            return 1
+        probs = probs / row_sum[:, None]
         y = np.array(y)
         pred = np.array(preds) if preds else probs.argmax(axis=1)
         correct = pred == y
