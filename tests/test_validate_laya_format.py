@@ -213,3 +213,41 @@ def test_main_handles_blank_lines_and_very_long_text(run_main, tmp_path):
     rc, text = run_main(out)
     assert rc == 0
     assert "rows=1" in text
+
+
+@pytest.mark.parametrize("state,type_name", [(123, "int"), ([1, 2], "list"), (True, "bool")])
+def test_main_rejects_non_string_state(run_main, tmp_path, state, type_name):
+    """回归：数字/列表 state 能通过原来的非空断言，但下游 sha(t) 对 int/list
+    调 .encode 会直接崩（check_leak、strict_acc、laya_metrics 三处）。
+
+    校验器必须在入口把类型拦住，而不是让错误延迟到评测阶段。
+    """
+    out = tmp_path / "laya"
+    _write(out, "bad_state.jsonl", [{"state": state, "questions": {"q": CHOICE_Q},
+                                     "expected": {"q": "positive"}}])
+    rc, text = run_main(out)
+    assert rc == 1
+    assert "state 必须是字符串或 dict" in text
+    assert type_name in text
+    assert "错误 1 条" in text
+
+
+def test_main_accepts_dict_state_with_text(run_main, tmp_path):
+    """Laya 支持 {"text": ...} 形态的 state，不能因为加了类型检查而拒掉。"""
+    out = tmp_path / "laya"
+    _write(out, "dict_state.jsonl", [{"state": {"text": "金融文本"},
+                                      "questions": {"q": CHOICE_Q},
+                                      "expected": {"q": "positive"}}])
+    rc, text = run_main(out)
+    assert rc == 0
+    assert "错误 0 条" in text
+
+
+def test_main_rejects_non_string_text_inside_dict_state(run_main, tmp_path):
+    out = tmp_path / "laya"
+    _write(out, "dict_state.jsonl", [{"state": {"text": 42},
+                                      "questions": {"q": CHOICE_Q},
+                                      "expected": {"q": "positive"}}])
+    rc, text = run_main(out)
+    assert rc == 1
+    assert "state.text 必须是字符串" in text

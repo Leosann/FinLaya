@@ -103,3 +103,22 @@ def test_load_states_matches_check_leak_semantics(strict_acc, check_leak, tmp_pa
 def test_strict_acc_sha(strict_acc):
     assert strict_acc.sha("文本") == _sha("文本")
     assert strict_acc.sha(None) == _sha("")
+
+
+def test_main_handles_empty_test_sets(check_leak, monkeypatch, tmp_path, capsys):
+    """回归：测试集为空时 100.0 * overlap / n 会抛 ZeroDivisionError，
+    整个泄漏检查中断。现在应给出提示、按 0.0% 记，并把其余检查跑完。"""
+    data = tmp_path / "empty_eval"
+    _write_jsonl(data / "cfsc_absa_train.jsonl", [{"state": "训练文本"}])
+    _write_jsonl(data / "finfe_train.jsonl", [{"state": "训练文本"}])
+    _write_jsonl(data / "finnsp_train.jsonl", [{"state": "训练文本"}])
+    for f in ("finfe_eval", "finnsp_eval", "cfsc_absa_test"):
+        (data / (f + ".jsonl")).write_text("", encoding="utf-8")
+    monkeypatch.setattr(check_leak, "DATA", str(data))
+
+    assert check_leak.main() == 0
+    out = capsys.readouterr().out
+    assert out.count("一行样本都没有") == 3
+    assert out.count("rows=0") == 3
+    assert "(0.0%)" in out
+    assert "Traceback" not in out

@@ -272,3 +272,107 @@ def test_sha_is_stable_and_handles_none(laya_metrics):
     assert laya_metrics.sha("文本") == laya_metrics.sha("文本")
     assert laya_metrics.sha(None) == laya_metrics.sha("")
     assert len(laya_metrics.sha("x")) == 64
+
+
+# ---------------------------------------------------------------- 坏概率 / 空严格口径
+def _write_report_and_dataset(tmp_path, cases, stem="r"):
+    """写一份最小报告 + 与 cases 逐行对齐的数据集，返回 (报告路径, 数据集路径)。"""
+    rep = tmp_path / (stem + ".json")
+    rep.write_text(json.dumps({"cases": cases}, ensure_ascii=False), encoding="utf-8")
+    ds = tmp_path / (stem + ".jsonl")
+    ds.write_text("".join(json.dumps({
+        "state": "%s#%d" % (c["qid"], i),
+        "expected": {c["qid"]: c["expected"]},
+    }, ensure_ascii=False) + "\n" for i, c in enumerate(cases)), encoding="utf-8")
+    return rep, ds
+
+
+def _choice_case(expected, probabilities):
+    answer = {"type": "choice"}
+    if probabilities is not None:
+        answer["probabilities"] = probabilities
+    return {"qid": "q", "expected": expected, "answer": answer}
+
+
+def _run_main(laya_metrics, monkeypatch, rep, ds, *extra):
+    monkeypatch.setattr("sys.argv", ["laya_metrics.py", str(rep), str(ds), *extra])
+    return laya_metrics.main()
+
+
+@pytest.mark.parametrize("bad_answer,label", [
+    (None, "整条 probabilities 缺失"),
+    ({"positive": 0.0, "negative": 0.0}, "概率显式全 0"),
+    ({"positive": float("nan"), "negative": 0.1}, "概率含 NaN"),
+    ({"positive": float("inf"), "negative": 0.1}, "概率含 inf"),
+])
+def test_main_rejects_invalid_probabilities(laya_metrics, monkeypatch, tmp_path,
+                                           capsys, bad_answer, label):
+    """回归：坏概率以前被 0/0 归一化成 NaN，accuracy 反而显示 1.0000，退出码还是 0。
+
+    必须显式失败，而且不能留下一个含 NaN 的指标文件（NaN 不是合法 JSON）。
+    """
+    good = _choice_case("positive", {"positive": 0.9, "negative": 0.1})
+    bad = {"qid": "q", "expected": "positive", "answer": {"type": "choice"}}
+    if bad_answer is not None:
+        bad["answer"]["probabilities"] = bad_answer
+    rep, ds = _write_report_and_dataset(tmp_path, [good, bad], stem="bad")
+    assert _run_main(laya_metrics, monkeypatch, rep, ds) == 1
+    out = capsys.readouterr().out
+    assert "概率缺失或非法" in out
+    assert not (tmp_path / "bad_metrics.json").exists()
+
+
+def test_main_accepts_probabilities_that_only_need_renormalising(laya_metrics, monkeypatch,
+                                                                  tmp_path, capsys):
+    """未归一化但不是零和行的概率必须照常计算，不能把修复做成了过度拦截。"""
+    cases = [_choice_case("positive", {"positive": 8.0, "negative": 2.0}),
+             _choice_case("negative", {"positive": 1.0, "negative": 9.0})]
+    rep, ds = _write_report_and_dataset(tmp_path, cases, stem="ok")
+    assert _run_main(laya_metrics, monkeypatch, rep, ds) == 0
+    capsys.readouterr()
+    got = json.loads((tmp_path / "ok_metrics.json").read_text(encoding="utf-8"))
+    assert got["q"]["accuracy"] == pytest.approx(1.0)
+    assert np.isfinite(got["q"]["nll"]) and np.isfinite(got["q"]["brier"])
+
+
+def _write_strict_train_files(laya_metrics, monkeypatch, tmp_path, texts):
+    data = tmp_path / "train_data"
+    data.mkdir()
+    for f in ("cfsc_absa_train.jsonl", "finfe_train.jsonl", "finnsp_train.jsonl"):
+        (data / f).write_text("".join(json.dumps({"state": t}, ensure_ascii=False) + "\n"
+                                     for t in texts), encoding="utf-8")
+    monkeypatch.setattr(laya_metrics, "DATA", str(data))
+    return data
+
+
+def test_main_strict_with_every_sample_filtered_fails(laya_metrics, monkeypatch,
+                                                      tmp_path, capsys):
+    """回归：--strict 把样本全部剔除时，旧行为是写出 {} 指标文件并返回 0。"""
+    txt = "与训练集完全相同的文本"
+    cases = [_choice_case("positive", {"positive": 0.9, "negative": 0.1})]
+    rep, ds = _write_report_and_dataset(tmp_path, cases, stem="strict")
+    # 数据集 state 要与训练集一致才会被判为重叠
+    ds.write_text(json.dumps({"state": txt, "expected": {"q": "positive"}},
+                             ensure_ascii=False) + "\n", encoding="utf-8")
+    _write_strict_train_files(laya_metrics, monkeypatch, tmp_path, [txt])
+    assert _run_main(laya_metrics, monkeypatch, rep, ds, "--strict") == 1
+    assert "严格口径下全部与训练集重叠" in capsys.readouterr().out
+    assert not (tmp_path / "strict_metrics_strict.json").exists()
+
+
+def test_main_strict_with_partial_filtering_still_reports(laya_metrics, monkeypatch,
+                                                          tmp_path, capsys):
+    """只剔除部分样本时不能误判为空结果 —— 这是上一条修复最容易误伤的路径。"""
+    seen, unseen = "见过的文本", "没见过的文本"
+    cases = [_choice_case("positive", {"positive": 0.9, "negative": 0.1}),
+             _choice_case("negative", {"positive": 0.1, "negative": 0.9})]
+    rep, ds = _write_report_and_dataset(tmp_path, cases, stem="partial")
+    ds.write_text("".join(json.dumps({"state": t, "expected": {"q": c["expected"]}},
+                                     ensure_ascii=False) + "\n"
+                          for t, c in zip((seen, unseen), cases)), encoding="utf-8")
+    _write_strict_train_files(laya_metrics, monkeypatch, tmp_path, [seen])
+    assert _run_main(laya_metrics, monkeypatch, rep, ds, "--strict") == 0
+    capsys.readouterr()
+    got = json.loads((tmp_path / "partial_metrics_strict.json").read_text(encoding="utf-8"))
+    assert got["q"]["n"] == 1
+    assert got["q"]["accuracy"] == pytest.approx(1.0)
